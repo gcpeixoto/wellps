@@ -23,7 +23,7 @@ warning(msg);
 % check if environment variables are set
 envs = {'MRST_DIR','SNAP_DIR'};
 fenvs = cellfun(@getenv,envs,'UniformOutput',false);
-if any(cellfun(@isempty,envs))    
+if any(cellfun(@isempty,fenvs))    
     disp('Required variables to be set (see README):')
     disp(envs') 
     error('Attention: environment variables not set.')
