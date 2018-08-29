@@ -1,5 +1,13 @@
 %% TUTORIAL 
 
+%% Mounting 
+
+% class instantiations 
+d = DirManager(); 
+
+
+d.mountDir();   % mounts standard directory tree
+
 %% Grid reading
 [G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
 
