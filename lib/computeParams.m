@@ -1,6 +1,6 @@
 function P = computeParams(G,PROPS)
-% Compute petrophysical and analytical parameters required to
-% reservoir modelling
+%COMPUTEPARAMS Compute petrophysical and analytical parameters required to
+%              reservoir modelling
 
 % SYNOPSIS: 
 %   P = computeParams(G,PROPS);
