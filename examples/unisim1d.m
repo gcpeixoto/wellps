@@ -55,3 +55,30 @@ S = printStats(P,{'DRTN_LN','DRTN_LOG10'},'n');
 drtlist = S{1}(5:6,1);
 drtSt = findDRTConnections(drtlist, P.DRTN_LN,500,'n', 1);
 
+%% Plot clusters from DRT-connected cells
+% To plot DRT-connected clusters, we need to take two steps: i) to use the
+% list of cell indices relative to the cluster you want to plot; ii) to do
+% an 'inverse mapping'. 
+% For i), it suffices to collect one among the lists contained inside 
+% the 'drtSt' structure; for ii), we need to follow a few steps
+%
+
+% This makes the 'inverse mapping', in the sense of filling the positions of 
+% Ind with the original indices of the grid before being processed by 
+% 'processGRDECL'. The array 'indexMap' has the original indices to which 
+% G.cells are identified.
+Ind = nan(prod(G.cartDims),1);
+Ind(G.cells.indexMap) = 1:G.cells.num;
+
+% plots the full UNISIM in dimmed grey 
+figure
+plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
+    'FaceAlpha',0.05, 'EdgeColor',[0.6,0.6,0.6],'EdgeAlpha',0.)
+
+% plots clusters 5 and 8 for DRT = 13.
+% We assume here DRT13 was included in 'drtlist' above and computed! 
+plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{5}),... 
+    'FaceColor','c','EdgeColor','k')
+plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{8}),...
+    'FaceColor','r','EdgeColor','k')
+axis off vis3d
