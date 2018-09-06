@@ -288,6 +288,8 @@ for val = drt(1):drt(end)
             
     % global  
     drtSt.value = val;                        % DRT value
+    drtSt.averaging = ave;                    % averaging technique used
+    drtSt.logBase = base;                     % log base used
     drtSt.allAdjMatrix = MDadj;               % graph adjacency matrix
     drtSt.allAdjEdgeList = edgeList;          % graph edge list
     drtSt.allVoxelCoords = coordsDRT;         % cell coordinates (i,j,k)     

@@ -1,6 +1,6 @@
 %% TUTORIAL 
 
-mrstVerbose on  % turn on verbose
+mrstVerbose off  % turn on verbose
 
 %% Mounting 
 
@@ -10,8 +10,7 @@ d = DirManager();
 d.mountDir();   % mounts standard directory tree
 
 %% Grid reading
-%[G,GAll,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
-[G,GAll,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING_NOPINCH.DATA');
+[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
 
 %% Plot properties 
 % 'buildModel' delivers a processed grid structure G.
@@ -53,7 +52,7 @@ S = printStats(P,{'DRTN_LN','DRTN_LOG10'},'n');
 % DRT value. The flag 'tocsv' allows us also to save this information in 
 % .csv files.
 drtlist = S{1}(5:6,1);
-drtSt = findDRTConnections(drtlist, P.DRTN_LN,500,'n', 1);
+drtSt = findDRTConnections(drtlist, P, 'geometric','ln',500,'y', 1);
 
 %% Plot clusters from DRT-connected cells
 % To plot DRT-connected clusters, we need to take two steps: i) to use the
@@ -82,3 +81,19 @@ plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{5}),...
 plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{8}),...
     'FaceColor','r','EdgeColor','k')
 axis off vis3d
+
+%% Computing graph metrics 
+% Here, we choose parameters to compute the graph metrics over all
+% the clusters previously computed with findDRTConnections 
+
+% number of significant cells to be considered. Clusters with less 'nofs'
+% cells are ignored
+opt.nofs = 100;    
+% linear regression slope +/- tolerance.
+opt.seps = 0.05;
+% minimum R2 coefficient tolerance.
+opt.R2min = 0.9;
+
+% compute
+[metricsSt,linregrSt] = computeDRTGraphMetrics(opt,drtSt);
+
