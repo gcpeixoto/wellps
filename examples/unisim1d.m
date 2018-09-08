@@ -1,4 +1,4 @@
-%% TUTORIAL 
+%% TUTORIAL: main script that demonstrates the WELLPS walkthrough
 
 mrstVerbose off  % turn on verbose
 
@@ -7,7 +7,8 @@ mrstVerbose off  % turn on verbose
 % class instantiations 
 d = DirManager(); 
 
-d.mountDir();   % mounts standard directory tree
+% mounts standard directory tree
+d.mountDir();   
 
 %% Grid reading
 [G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
@@ -96,4 +97,14 @@ opt.R2min = 0.9;
 
 % compute
 [metricsSt,linregrSt] = computeDRTGraphMetrics(opt,drtSt);
+
+
+%% Metrics analytics 
+% This method will export lots of .csv files ready to be handled in terms
+% of data analytics relating to graph centrality metrics computed for each 
+% cluster.  
+metricsAnalyzer([13,14],[1,2],'geometric','ln');
+
+%% Process cluster fit 
+
 

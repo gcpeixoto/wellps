@@ -8,3 +8,4 @@ made available by third-parties which are used
 to perform specialized computing tasks.
   
 - networkComponents: written by D. Larremore, @Harvard 
+- ellipsoidFit: written by Yury Petrov
