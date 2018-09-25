@@ -77,7 +77,7 @@ plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
 
 % plots clusters 5 and 8 for DRT = 13.
 % We assume here DRT13 was included in 'drtlist' above and computed! 
-plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{5}),... 
+plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{4}),... 
     'FaceColor','c','EdgeColor','k')
 plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{8}),...
     'FaceColor','r','EdgeColor','k')
@@ -106,5 +106,70 @@ opt.R2min = 0.9;
 metricsAnalyzer([13,14],[1,2],'geometric','ln');
 
 %% Process cluster fit 
+% This method will compute the fit parameters for given DRT,
+% cluster(s) and rotation angle(s) based on a best-fit ellipsoid
+% for the cluster shape. These parameters are useful to build 
+% 5-spot nonuniform well patterns. See the functioin documentation to 
+% understand what is going on behind the scenes. 
+clusterFitSt = processClusterFit(G,[13,14],[1,2],'geometric','ln',[0,pi/2]);
 
+%% Build a nonuniform 5-spot well pattern for a given cluster
+% Here, we form the nonuniform standard 5-spot as follows:
+%
+% - producer well: column of all (vertical) cells neighbour to the maximum
+%                  closeness centrality cell 
+% - injection wells: column of all (vertical) cells neighbour to each of 
+%                    the 4 cluster-fit cells +X,-X,+Y,-Y for the cluster
+%
+% REMARK: the z-range considered is that one of the cluster.
 
+% injectors 
+% +X
+col_inj_1 = clusterFitSt.DRT13.C1.Pattern1.colNeighsX1;
+                  
+% -X
+col_inj_2 = clusterFitSt.DRT13.C1.Pattern1.colNeighsX2;
+         
+% +Y
+col_inj_3 = clusterFitSt.DRT13.C1.Pattern1.colNeighsY1;
+                  
+% -Y
+col_inj_4 = clusterFitSt.DRT13.C1.Pattern1.colNeighsY2;
+
+% producer 
+col_prod = clusterFitSt.DRT13.C1.Pattern1.colNeighsMaxC;
+
+% getting cell indices
+icol_prod = sub2ind(G.cartDims,col_prod(:,1),col_prod(:,2),col_prod(:,3));
+icol_prod = Ind(icol_prod);
+
+icol_inj_1 = sub2ind(G.cartDims,col_inj_1(:,1),col_inj_1(:,2),col_inj_1(:,3));
+icol_inj_1 = Ind(icol_inj_1);
+
+icol_inj_2 = sub2ind(G.cartDims,col_inj_2(:,1),col_inj_2(:,2),col_inj_2(:,3));
+icol_inj_2 = Ind(icol_inj_2);
+
+icol_inj_3 = sub2ind(G.cartDims,col_inj_3(:,1),col_inj_3(:,2),col_inj_3(:,3));
+icol_inj_3 = Ind(icol_inj_3);
+
+icol_inj_4 = sub2ind(G.cartDims,col_inj_4(:,1),col_inj_4(:,2),col_inj_4(:,3));
+icol_inj_4 = Ind(icol_inj_4);
+
+% plot 5-spot columns 
+figure 
+plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{1}),'FaceColor',[0.6,0.6,0.6], ...
+    'FaceAlpha',0.05, 'EdgeColor',[0.6,0.6,0.6],'EdgeAlpha',0.1)
+
+% producer
+plotGrid(G,icol_prod(~isnan(icol_prod)),'FaceColor','r','EdgeColor','k')
+
+% injector 1
+plotGrid(G,icol_inj_1(~isnan(icol_inj_1)),'FaceColor','b','EdgeColor','k')
+
+% injector 2
+plotGrid(G,icol_inj_2(~isnan(icol_inj_2)),'FaceColor','b','EdgeColor','k')
+
+% injector 3plotGrid(G,icol_inj_3(~isnan(icol_inj_3)),'FaceColor','b','EdgeColor','k')
+% injector 4
+plotGrid(G,icol_inj_4(~isnan(icol_inj_4)),'FaceColor','b','EdgeColor','k')
+axis off vis3d
