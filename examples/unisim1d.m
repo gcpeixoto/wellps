@@ -52,8 +52,12 @@ S = printStats(P,{'DRTN_LN','DRTN_LOG10'},'n');
 % This will produce a big structure containing several structures, each per
 % DRT value. The flag 'tocsv' allows us also to save this information in 
 % .csv files.
+
+% number of significant cells
+nofs = 30;
+
 drtlist = S{1}(5:6,1);
-drtSt = findDRTConnections(drtlist, P, 'geometric','ln',500,'y', 1);
+drtSt = findDRTConnections(drtlist, P, 'geometric','ln',nofs,'y', 1);
 
 %% Plot clusters from DRT-connected cells
 % To plot DRT-connected clusters, we need to take two steps: i) to use the
@@ -77,7 +81,7 @@ plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
 
 % plots clusters 5 and 8 for DRT = 13.
 % We assume here DRT13 was included in 'drtlist' above and computed! 
-plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{4}),... 
+plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{5}),... 
     'FaceColor','c','EdgeColor','k')
 plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{8}),...
     'FaceColor','r','EdgeColor','k')
@@ -89,7 +93,7 @@ axis off vis3d
 
 % number of significant cells to be considered. Clusters with less 'nofs'
 % cells are ignored
-opt.nofs = 100;    
+opt.nofs = nofs;    
 % linear regression slope +/- tolerance.
 opt.seps = 0.05;
 % minimum R2 coefficient tolerance.
@@ -111,7 +115,7 @@ metricsAnalyzer([13,14],[1,2],'geometric','ln');
 % for the cluster shape. These parameters are useful to build 
 % 5-spot nonuniform well patterns. See the functioin documentation to 
 % understand what is going on behind the scenes. 
-clusterFitSt = processClusterFit(G,[13,14],[1,2],'geometric','ln',[0,pi/2]);
+clusterFitSt = processClusterFit(G,[13,14],1:4,'geometric','ln',[0,pi/2]);
 
 %% Build a nonuniform 5-spot well pattern for a given cluster
 % Here, we form the nonuniform standard 5-spot as follows:
