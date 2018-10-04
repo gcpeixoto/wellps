@@ -125,14 +125,19 @@ for ncomp = 1:G2.ncomp
         G2M.degreeCentrality{ncomp} = deg;
         G2M.closenessCentrality{ncomp} = clns;
         G2M.betweenessCentrality{ncomp} = betw;                
-        G2M.maxClosenessVoxelCoords{ncomp} = ivC(1,:);    
+        G2M.maxClosenessVoxelCoords{ncomp} = ivC(1,:);   
+
+        % save perforation table (to be pasted into CMG .dat)        
+        ptset.wellname = strcat('P',num2str(ncomp));
+        ptset.geometry = 'K';
+        ptset.perfs = G2M.maxClosenessVoxelCoords{ncomp};
+        ptset = savePerfTable(ptset);        
     end
       
 end
 
-%% list of max closeness logical indices
 
-for i = 1:numel(G2M.maxClosenessVoxelCoords)
-    fprintf('%d %d %d \n',G2M.maxClosenessVoxelCoords{i});
-end
+
+
+
 
