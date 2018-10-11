@@ -107,3 +107,16 @@ while numel(I) > 0 % not empty list condition
      
 end
 
+% reorder to output clusters in descending number of elements
+% the oiriginal cluster's label is lost, but this is irrelevant
+[~,reordered] = sort(cellfun(@numel,clusters),2,'descend');
+cReord = clusters;
+for c = 1:numel(clusters)
+    cReord{c} = clusters{reordered(c)};
+end
+
+% reordered cluster
+clusters = cReord;
+
+
+

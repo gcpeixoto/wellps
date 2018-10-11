@@ -1,4 +1,4 @@
-
+%% CASE: constrained clustering
 
 %% Tests
 
@@ -13,7 +13,7 @@
 % data matrix
 load ../mat/L.mat;
 
-test = 3;
+test = 7;
 
 %%
 switch test
@@ -60,8 +60,8 @@ switch test
         i0 = 1;    
         
     case 7
-        X = L.DRT14.logPHIZ{3};
-        Y = L.DRT14.logRQI{3};        
+        X = L.DRT14.logPHIZ{1};
+        Y = L.DRT14.logRQI{1};        
         seps = 1e-2;
         i0 = 1;    
                 
