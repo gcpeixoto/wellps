@@ -75,14 +75,14 @@ while numel(I) > 0 % while there exists free indices
         for j = Cm
             
             % slope 
-            m_jk = (Y(j) - Y(k))/(X(j) - X(k)); 
+            s_jk = (Y(j) - Y(k))/(X(j) - X(k)); 
             
             % safety checking for points with same x-coordinate.
             % This may happen and indetermine m_jk.
-            if isinf(m_jk), m_jk = 0; end;
+            if isinf(s_jk), s_jk = 0; end;
             
             % CONSTRAINT: slope must fall into [1-seps,1+seps]
-            if 1 - seps <= m_jk && m_jk <= 1 + seps
+            if 1 - seps <= s_jk && s_jk <= 1 + seps
                 paired(Cm == j) = true; % marks as paired                            
             end            
         end
