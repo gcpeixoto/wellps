@@ -1,5 +1,55 @@
 function ptset = savePerfTable(ptset)
-
+%SAVEPERFTABLE writes a .txt file containing a perforation table
+%              to be pasted (MANUALLY) into .DAT CMG IMEX file.
+%
+% EXAMPLE:
+%
+%   % mounting table of 40 perforations in the column [1,2,k], k = 1:40
+%   n = 40;
+%   ptset.wellname = 'Well1';
+%   ptset.geometry = 'K';
+%   ptset.perfs = [ones(n,1),2*ones(n,1),(1:n)'];               
+%   ptset = savePerfTable(ptset);
+%
+%
+% PARAMETERS: 
+%       - ptset:    settings to be used to mount the table (struct)
+%
+%                   'ptset' accepts the following fields:
+%
+%                    - 'geometry': for now, only the flag 'K' (char)
+%                                  is accepted. This stands for the 
+%                                  well direction and it is a parameter
+%                                  understood by BUILDER/IMEX to set up a 
+%                                  vertical well. See CMG manual to see 
+%                                  uses and options.
+%
+%                    - 'perfs': logical indices of the cells to be assigned
+%                               in perforation table. It is a (nx3) array,
+%                               where n is the number of cells to be 
+%                               perforated. For example: 
+%                       
+%                               ptset.perfs = [1 2 3; 1 2 4; 1 2 5];
+%
+%                    - 'wellname': well name (char). This is only a label.
+%
+%                    - 'status': the status for each perforation (cell). 
+%                                It is a cell of strings. If not specified 
+%                                by the user, the standard option 'OPEN' is
+%                                set to all the perforations. In case of
+%                                variable options, the status specification 
+%                                is mandatory for each individual
+%                                perforation. For example:
+%
+%                                ptset.status = {'OPEN','OPEN','SHUT IN'};
+%
+%
+% RETURNS:
+%
+%       - file:     a .txt which is saved to standart ../tmp folder
+%
+%
+% Dr. Gustavo Oliveira, @LaMEP/UFPB
 
 if  ~isfield(ptset,'geometry') 
     ptset.geometry = 'K';
@@ -45,8 +95,6 @@ end
 
 fid = fopen(filen,'w');
 
-
-
 % User Block Address
 line = '** UBA  ff  Status  Connection\n';
 fprintf(fid,line);
@@ -73,6 +121,8 @@ for n = 1:nperfs
     end
     
 end
+
+fprintf('---> Perforation table saved to file: ''%s''.\n',filen);
 
 % close
 fclose(fid);
