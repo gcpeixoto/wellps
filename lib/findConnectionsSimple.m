@@ -33,47 +33,52 @@ for i = 1:size(cvc,1)
      end
 end   
 
+% finish, if no connection is found
 if isempty(indIJ)
-    fprintf('----> No connections found for DRT = %d... \n',val);    
-end
+    fprintf('----> No connections found. Leaving... \n');
+    F = [];
 
-aux = [ indIJ(:,2) indIJ(:,1) ]; % reverse edges [ j i ]
-indIJ = [ indIJ; aux ]; % filling        
+else
 
-disp('----> Computing adjacency matrix...');            
+    aux = [ indIJ(:,2) indIJ(:,1) ]; % reverse edges [ j i ]
+    indIJ = [ indIJ; aux ]; % filling        
 
-% creates adjacency matrix n x n by marking 1 for connected nodes
-Madj = sparse( indIJ(:,1),indIJ(:,2),1,size(cvc,1),size(cvc,1) ); 
+    disp('----> Computing adjacency matrix...');            
+
+    % creates adjacency matrix n x n by marking 1 for connected nodes
+    Madj = sparse( indIJ(:,1),indIJ(:,2),1,size(cvc,1),size(cvc,1) ); 
 
 
-disp('----> Finding connected components...');
-[ncomp,compSizes,members] = networkComponents(Madj);
+    disp('----> Finding connected components...');
+    [ncomp,compSizes,members] = networkComponents(Madj);
 
-% getting cells per component
-compvc = cell(1,ncomp);
-adj = cell(1,ncomp);
-for nm = 1:ncomp
-    
-    compvc{nm} = cvc(members{nm},:);
-    
-    
-    % form component adjacency matrix 
-    v = []; 
-    for e = 1:size(compvc{nm},1) 
-        id = (cvc(:,1) == compvc{nm}(e,1) & ...        
-              cvc(:,2) == compvc{nm}(e,2) & ...
-              cvc(:,3) == compvc{nm}(e,3)); 
-        id = find(id == 1); 
-        v(e) = id; % global indices
+    % getting cells per component
+    compvc = cell(1,ncomp);
+    adj = cell(1,ncomp);
+    for nm = 1:ncomp
+
+        compvc{nm} = cvc(members{nm},:);
+
+
+        % form component adjacency matrix 
+        v = []; 
+        for e = 1:size(compvc{nm},1) 
+            id = (cvc(:,1) == compvc{nm}(e,1) & ...        
+                  cvc(:,2) == compvc{nm}(e,2) & ...
+                  cvc(:,3) == compvc{nm}(e,3)); 
+            id = find(id == 1); 
+            v(e) = id; % global indices
+        end
+        adj{nm} = subgraph( Madj, v ); % component's adjacency matrix
+
     end
-    adj{nm} = subgraph( Madj, v ); % component's adjacency matrix
-       
-end
 
-% structure
-F.ncomp = ncomp;
-F.compSizes = compSizes; 
-F.compMembers = members;
-F.allAdjMatrix = Madj;
-F.compVoxelCoords = compvc;
-F.compAdjMatrix = adj;
+    % structure
+    F.ncomp = ncomp;
+    F.compSizes = compSizes; 
+    F.compMembers = members;
+    F.allAdjMatrix = Madj;
+    F.compVoxelCoords = compvc;
+    F.compAdjMatrix = adj;
+
+end
