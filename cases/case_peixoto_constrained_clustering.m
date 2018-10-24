@@ -13,7 +13,7 @@
 % data matrix
 load ../mat/L.mat;
 
-test = 7;
+test = 4;
 
 %%
 switch test
@@ -43,7 +43,7 @@ switch test
         X = [x,x,x,x];
         Y = [-x,-0.5*x,0.5*x,x];
         seps = 1e-2;
-        i0 = 1;
+        i0 = 5;
     
     case 5       
         x = 10*rand(1,20);        
@@ -72,7 +72,7 @@ end
 Clusters = slopeConstrainedClustering(X,Y,i0,seps);
 
 %% Plotting best-fit lines for clusters 
-
+figure
 for c = 1:numel(Clusters)
     
     IC = Clusters{c};        
