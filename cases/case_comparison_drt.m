@@ -1,4 +1,7 @@
-%% CASE: comparison of DRT clustering 
+%% CASE STUDY: DRT distribution under different averaging
+
+% Visualization of DRT distribution over UNISIM 1D from 
+% LN and LOG10 for different permeability averaging rules
 
 %% Load grid 
 [G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
