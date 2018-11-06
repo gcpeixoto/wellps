@@ -1,4 +1,5 @@
-%% CASE: comparison of clustering generated from FZI and FZI*
+%% CASE STUDY: comparison of DRT-clustering generated from FZI and FZI*
+% DRT/DRT* computed from FZI/FZI* over UNISIM 1D
 
 %% Load grid 
 [G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
@@ -120,5 +121,3 @@ for i = 1:nlns
         
 end
    
-
-[~,fn] = csvHeader('../tmp/test','a','b','c','d');
