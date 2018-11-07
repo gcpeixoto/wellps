@@ -49,7 +49,7 @@ histogram(FZIN0)
 %% Partitions 
 
 % partition number and thresholds
-np = 20;
+np = 80;
 p = linspace(min(FZIN0),max(FZIN0),np);
 
 % partition indices
@@ -77,6 +77,35 @@ for k = 1:numel(ip)
     end
 end
 
+%% Computing logs and regression of clusters
+
+% performance parameters
+seps = 1e-1;
+R2min = 0.9;
+
+for gr = conn   
+    for comp = 1:C{gr}.ncomp                
+        members = C{gr}.compMembers{comp};
+        locs = ip{gr}(members); % get indices of cluster at reservoir    
+        
+        % compute logs and regression and stores into structure
+        C{gr}.Log10Phiz{comp} = P.Log10PHIZ(locs);
+        C{gr}.Log10RQIN{comp} = P.Log10RQIN(locs);
+        [R,m,b] = regression(P.Log10PHIZ(locs),P.Log10RQIN(locs),'one');
+        C{gr}.R2{comp} = R*R;
+        C{gr}.slope{comp} = m;
+        C{gr}.offset{comp} = b;    
+        
+        % performance
+        if R*R >= R2min && ( 1-seps <= m && m <= 1+seps )
+            C{gr}.performance{comp} = true;
+        else
+            C{gr}.performance{comp} = false;
+        end            
+    end    
+end
+
+
 
 %% Plot clusters per group
 
@@ -98,12 +127,44 @@ for gr = conn
         % range
         if numel(members) >= nel && ~isempty(locs) 
             Gfzi = extractSubgrid(G,Ind(locs));               
-            hold on
-            plotCellData(Gfzi,FZIN(locs));                  
+            %hold on
+            %plotCellData(Gfzi,FZIN(locs));                  
         end                
     end
     axis off vis3d
     colormap(jet); colorbar;
     tit = sprintf('plot FZI; partition: %d; min. cluster: %d',gr,nel);
     title(tit);
+end
+
+%% Plot only high-performance clusters 
+
+
+% loop over partitions 
+for gr = conn            
+    
+    figure   
+    % loop over connected clusters
+    for comp = 1:C{gr}.ncomp
+        
+        if C{gr}.performance{comp} == true
+                
+            members = C{gr}.compMembers{comp};
+            locs = ip{gr}(members); % get indices of cluster at reservoir    
+
+            % plot all the connected clusters with nel elements for given FZI
+            % range
+            if numel(members) >= nel && ~isempty(locs) 
+                Gfzi = extractSubgrid(G,Ind(locs));               
+                hold on
+                plotCellData(Gfzi,FZIN(locs));                  
+            end                
+        end
+    end
+    
+    axis off vis3d
+    colormap(jet); colorbar;
+    tit = sprintf('plot FZI; gr.: %d; HP clust.: %d',gr,comp);
+    title(tit);
+        
 end
