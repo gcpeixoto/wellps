@@ -1,10 +1,10 @@
-function [clusters,R2,M] = slopeConstrainedClustering(X,Y,i0,seps)
-%SLOPECONSTRAINEDCLUSTERING carries out a constrained clustering procedure
-%                           based on unitary slope of pairwise points 
-%                           p_i, p_j, such as p_i = (x_i,y_i) and
+function [clusters,R2,M,B] = slopeConstrainedClusteringCT(X,Y,i0,seps)
+%SLOPECONSTRAINEDCLUSTERINGCT carries out a constrained clustering procedure
+%                             based on unitary slope of pairwise points 
+%                             p_i, p_j, such as p_i = (x_i,y_i) and
 %                                             p_j = (x_j,y_j), with
-%                           x_i = X(i); y_i = Y(i)
-%                           x_j = X(j); y_j = Y(j)
+%                             x_i = X(i); y_i = Y(i)
+%                             x_j = X(j); y_j = Y(j)
 %
 % PARAMETERS:
 %   - X:        x-coordinate array of points (double)
@@ -16,11 +16,28 @@ function [clusters,R2,M] = slopeConstrainedClustering(X,Y,i0,seps)
 %   - clusters:  disjoint clusters of variable sizes (cell)
 %   - R2:        coefficients of determination per cluster (double)
 %   - M:         slopes of best-fit lines per cluster (double)
+%   - B:         offsets of best-fit lines per cluster (double)
 %
 % 
 % DETAILS:
 %
-%   TODO
+%   Given the cloud of points, the method forms a cluster by putting
+%   together those points that attend to the two constraints below: 
+%
+%   i) the points are inside the planar region ("plane cone") confined by the 
+%   two straight lines of slopes s = 1 - eps below and s = 1 + eps above
+%   crossing the point (X(i0),Y(i0)) - condition (C: CONE)
+%
+%   ii) the points in the plnar cone form two-by-two (pairwise) a slope 
+%   that attend the condition i). In fact, this constraint stands for 
+%   transitivity, i.e. 
+%   
+%       "if must-link(pi, pj) is true and must-link(pj, pl) is true,
+%        then must-link(pi, pk) must also be true"
+%
+%   This is constraint is an additional enforcement. Tests show that it 
+%   is not required if i) is fulfilled - condition (T: TRANSITIVITY)
+%   
 %
 % Dr. Gustavo Oliveira, @LaMEP/UFPB
 
@@ -138,14 +155,16 @@ clusters = cReord;
 
 % pre-allocation
 R2 = zeros(1,numel(clusters));
-M = R2;
+M = 0*R2;
+B = 0*R2;
 
 % compute R2 and slopes
 for c = 1:numel(clusters)  
     IC = clusters{c};   % get indices        
-    [R,m,~] = regression(X(IC),Y(IC),'one');    % get coordinates
-    R2(c) = R*R;    % coefficient of determination array                                 
-    M(c) = m;   % slope array    
+    [R,m,b] = regression(X(IC),Y(IC),'one');    % get coordinates
+    R2(c) = R*R; % coefficient of determination array                                 
+    M(c) = m;    % slope array    
+    B(c) = b;    % offset array    
 end
 
 
