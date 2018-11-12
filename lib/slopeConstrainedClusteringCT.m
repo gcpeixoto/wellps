@@ -94,9 +94,9 @@ while numel(I) > 0 % while there exists free indices
             % slope 
             s_jk = (Y(j) - Y(k))/(X(j) - X(k)); 
             
-            % safety checking for points with same x-coordinate.
-            % This may happen and indetermine m_jk.
+            % safety checkings
             if isinf(s_jk), s_jk = 0; end;
+            if isnan(s_jk), s_jk = 0; end;
             
             % CONSTRAINT: slope must fall into [1-seps,1+seps]
             if 1 - seps <= s_jk && s_jk <= 1 + seps
