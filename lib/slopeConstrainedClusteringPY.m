@@ -105,6 +105,11 @@ while numel(I) > 0 % while there exists free indices
         I = find(collected==false); % update list
     end
      
+    % only print info
+    if mod(numel(I),1000) == 0
+        fprintf('#List: %d\n',numel(I));
+    end
+    
 end
 
 %% Cluster reordering 
