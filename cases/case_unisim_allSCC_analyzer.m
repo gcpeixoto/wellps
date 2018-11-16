@@ -84,8 +84,9 @@ deal(getidx(idx_c),getidx(idx_ct),getidx(idx_py),getidx(idx_nl),getidx(idx_6n));
 IDX = {idx_c,idx_ct,idx_py,idx_nl,idx_6n};
 aux = cellfun(@isempty,IDX);
 if any(aux)
-    i = find(aux);
-    fprintf('---> No clusters for %s clustering with min. element: %d.\n',codename{i},minel); 
+    methodi = find(aux);
+    fprintf('---> No clusters for %s clustering with min. element: %d.\n',...
+            codename{methodi},minel); 
 end
 
 %% Clusters
@@ -169,8 +170,11 @@ nppy = numel(idx_py);
 npnl = numel(idx_nl);
 np6n = numel(idx_6n);
 
-% marks which method does not have clusters to be analysed
+% mark which method do has clusters to be analysed
 goto_analysis = true(1,4);
+
+% 'sccX_pc' are arrays storing, per partition, the indices of all the
+% clusters whose number of elements is >= minc for the method 'X'.
 
 % SCCC
 sccc_pc = cell(npc,1);
@@ -186,7 +190,17 @@ for p = 1:npc
 end
 % checking
 if all(cellfun(@isempty,sccc_pc))
-    goto_analysis(1) = false;        
+    goto_analysis(1) = false;    
+else
+   % store useful parts and associated clusters
+   aux = find(~cellfun(@isempty,sccc_pc));
+   aux2 = cell(numel(aux),2);
+   for i = 1:numel(aux)       
+       aux2{i,1} = aux(i);
+       aux2{i,2} = sccc_pc{aux(i)};
+   end
+      
+   sccc_pc = aux2;
 end
 
 % SCCT
@@ -204,7 +218,18 @@ end
 
 % checking
 if all(cellfun(@isempty,scct_pc))
-    goto_analysis(2) = false;        
+    goto_analysis(2) = false;    
+else
+    % store useful parts and associated clusters
+   aux = find(~cellfun(@isempty,scct_pc));
+   aux2 = cell(numel(aux),2);
+   for i = 1:numel(aux)
+       aux2{i,1} = aux(i);
+       aux2{i,2} = scct_pc{aux(i)};
+   end
+      
+   scct_pc = aux2;
+    
 end
 
 % SCCPY
@@ -222,7 +247,17 @@ end
 
 % checking
 if all(cellfun(@isempty,sccpy_pc))
-    goto_analysis(3) = false;        
+    goto_analysis(3) = false;   
+else
+    % store useful parts and associated clusters
+   aux = find(~cellfun(@isempty,sccpy_pc));
+   aux2 = cell(numel(aux),2);
+   for i = 1:numel(aux)
+       aux2{i,1} = aux(i);
+       aux2{i,2} = sccpy_pc{aux(i)};
+   end
+      
+   sccpy_pc = aux2;
 end
 
 % SCCNL
@@ -240,11 +275,49 @@ end
 
 % checking
 if all(cellfun(@isempty,sccnl_pc))
-    goto_analysis(4) = false;        
+    goto_analysis(4) = false;  
+else
+    % store useful parts and associated clusters
+   aux = find(~cellfun(@isempty,sccnl_pc));
+   aux2 = cell(numel(aux),2);
+   for i = 1:numel(aux)
+       aux2{i,1} = aux(i);
+       aux2{i,2} = sccnl_pc{aux(i)};
+   end
+      
+   sccnl_pc = aux2;
 end
 
-% Preparing to seew
-C_TO_INTEREST = {sccc_pc,scct_pc,sccpy_pc,sccnl_pc};
-CONNS = {SCCC_connections,SCCT_connections,SCCPY_connections,SCCNL_connections};
-toi = find(goto_analysis);
+%{ 
+TODO
+Arranging and filtering 
+TO_ANALYSIS = {sccc_pc,scct_pc,sccpy_pc,sccnl_pc};
+CONNS = {SCCC_connections,SCCT_connections,...
+         SCCPY_connections,SCCNL_connections};
+toa = find(goto_analysis);
+
+dim_partitions = 0; 
+dim_clusters = 0;
+
+ALLPARTS = [];
+ALLCLUSTERS = [];
+for t = toa
+    partitions = TO_ANALYSIS{t}(:,1);  ALLPARTS = [ALLPARTS; partitions];  
+    
+    p = length(partitions);
+    dim_partitions = dim_partitions + p;
+       
+    clusters = TO_ANALYSIS{t}(:,2);  ALLCLUSTERS = [ALLCLUSTERS; clusters];
+    for pp = 1:p
+        dim_clusters = dim_clusters + ... 
+            numel(CONNS{t}.connections{partitions{pp}}.compSizes(clusters{pp}));                
+    end
+            
+end
+dim_methods = t;
+%}
+
+                        
+
+
 
