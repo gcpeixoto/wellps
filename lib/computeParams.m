@@ -86,17 +86,40 @@ DRTAStar_LOG10 = r(FZIAStar); DRTAStar_LOG10(isinf(DRTAStar_LOG10)) = 0; % arith
 DRTGStar_LOG10 = r(FZIGStar); DRTGStar_LOG10(isinf(DRTGStar_LOG10)) = 0; % geometric
 DRTNStar_LOG10 = r(FZINStar); DRTNStar_LOG10(isinf(DRTNStar_LOG10)) = 0; % normalized
 
+%{ 
+    REMARK
+    ======
+
+    Please, note that the arrays that compute Log values might produce -Inf
+    /+Inf indeterminacies because there are points with null porosity. 
+    This was observed afterwards and a forced conversion to zero was
+    inserted here.
+    
+    User must be aware of this, since the outcome arrays will not bring
+    arrays with the original values. For the purposes of this project, null
+    porosity cells have no sense, as with keeping arrays with -/+ Inf values. 
+    The 0 entries, however, must be therein to keep the coherent dimensions
+    for final plotting and addressing. 
+
+    Furthermore, we have not chosen sparse allocation because
+    incompatibilities with MRST might arise, since the functions would have
+    to receive sparse objects as input arguments. 
+
+    Below, we make the 0 filtering in the same manner we did for DRT arrays. 
+
+%}
+
 % base-10 logs
-Log10PHIZ = log10(PHIZ);    
-Log10RQIA = log10(RQIA); % arithmetic                 
-Log10RQIG = log10(RQIG); % geometric
-Log10RQIN = log10(RQIN); % normalized
+Log10PHIZ = log10(PHIZ);  Log10PHIZ(isinf(Log10PHIZ)) = 0;   
+Log10RQIA = log10(RQIA);  Log10RQIA(isinf(Log10RQIA)) = 0;   % arithmetic                 
+Log10RQIG = log10(RQIG);  Log10RQIG(isinf(Log10RQIG)) = 0;   % geometric
+Log10RQIN = log10(RQIN);  Log10RQIN(isinf(Log10RQIN)) = 0;   % normalized
 
 % base-e logs
-LNPHIZ = log(PHIZ);    
-LNRQIA = log(RQIA); % arithmetic                 
-LNRQIG = log(RQIG); % geometric
-LNRQIN = log(RQIN); % normalized
+LNPHIZ = log(PHIZ);  LNPHIZ(isinf(LNPHIZ)) = 0;    
+LNRQIA = log(RQIA);  LNRQIA(isinf(LNRQIA)) = 0;  % arithmetic                 
+LNRQIG = log(RQIG);  LNRQIG(isinf(LNRQIG)) = 0;  % geometric
+LNRQIN = log(RQIN);  LNRQIN(isinf(LNRQIN)) = 0;  % normalized
 
 % for FZI*, we need log(0.0314*sqrt(KN)) and log(sqrt(PHI))
 % # base-10 logs
@@ -105,11 +128,21 @@ Log10FZIStarG_SQRTK = log10(0.0314*sqrt(KG)); % geometric
 Log10FZIStarN_SQRTK = log10(0.0314*sqrt(KN)); % normalized
 Log10FZIStar_SQRTPHI = log10(sqrt(PHI)); 
 
+Log10FZIStarA_SQRTK(isinf(Log10FZIStarA_SQRTK)) = 0;
+Log10FZIStarG_SQRTK(isinf(Log10FZIStarG_SQRTK)) = 0;
+Log10FZIStarN_SQRTK(isinf(Log10FZIStarN_SQRTK)) = 0;
+Log10FZIStar_SQRTPHI(isinf(Log10FZIStar_SQRTPHI)) = 0;
+
 % # base-e logs
 LNFZIStarA_SQRTK = log(0.0314*sqrt(KA)); % arithmetic                 
 LNFZIStarG_SQRTK = log(0.0314*sqrt(KG)); % geometric
 LNFZIStarN_SQRTK = log(0.0314*sqrt(KN)); % normalized
 LNFZIStar_SQRTPHI = log(sqrt(PHI)); 
+
+LNFZIStarA_SQRTK(isinf(LNFZIStarA_SQRTK)) = 0;
+LNFZIStarG_SQRTK(isinf(LNFZIStarG_SQRTK)) = 0;
+LNFZIStarN_SQRTK(isinf(LNFZIStarN_SQRTK)) = 0;
+LNFZIStar_SQRTPHI(isinf(LNFZIStar_SQRTPHI)) = 0;
 
 % all params
 p = {PHI, KX, KY, KZ , PHIZ,                     ...
