@@ -25,6 +25,9 @@ Gc = computeGeometry(G);
 % structure of several parameters (RQI, FZI, PHIZ, etc.)
 P = computeParams(G,PROPS);
 
+Log10Phiz = P.Log10PHIZ(:);
+Log10RQIN = P.Log10RQIN(:);
+
 %% Mapping
 Ind = nan(prod(G.cartDims),1);
 Ind(G.cells.indexMap) = 1:G.cells.num;
@@ -117,19 +120,37 @@ end
 
 % plot clusters per partition 
 
-for i = 12%:length(PC)
+R2C = PC;
+MC = PC;
+LOCS = PC;
+for i = 1:length(PC)
 
     clust = PC{i};
     
+    locs_pc = [];
+    
+    figure
     for c = 1:length(clust)        
-        Gfzi = extractSubgrid(G,Ind(SCC.clusters{c}));               
-        hold on
-        plotCellData(Gfzi,FZIN(SCC.clusters{c}));    
+        
+        locs = SCC.clusters{clust(c)};
+        
+        locs_pc = [locs_pc, locs];
+        
+        Gfzi = extractSubgrid(G,Ind(locs));                       
+        %hold on
+        %plotCellData(Gfzi,FZIN(locs));    
     end
+        
+    [R,m,b] = regression(Log10Phiz(locs_pc),Log10RQIN(locs_pc),'one');
+    R2C{i} = R*R;
+    MC{i} = m;
+    LOCS{i} = locs_pc;
     
 end
 
 
+
+%{
 
 % partition voxels
 vp = cell(size(ip));
@@ -147,6 +168,7 @@ for k = 1:numel(ip)
         fprintf('---> Group %d: %d components found. Maximum component has %d members.\n',k,C{k}.ncomp,C{k}.compSizes(1));
     end
 end
+
 
 
 %% Plot clusters per group
@@ -178,3 +200,5 @@ for gr = conn
     tit = sprintf('plot FZI; partition: %d; min. cluster: %d',gr,nel);
     title(tit);
 end
+
+%}
