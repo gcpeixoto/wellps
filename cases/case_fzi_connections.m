@@ -8,6 +8,13 @@
 % - Search for FZI 6-N connections and build groups
 % - Find clusters  
 
+%% Load data 
+if exist('data/SCC6N.mat','file')
+    load('data/SCC6N.mat');    
+else
+    error('You need to compute wellps:slopeConstrainedClustering6N.m before proceeding.')
+end
+
 %% Load grid 
 [G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
 
@@ -48,8 +55,9 @@ histogram(FZIN0)
 
 %% Partitions 
 
+
 % partition number and thresholds
-np = 80;
+np = 20;
 p = linspace(min(FZIN0),max(FZIN0),np);
 
 % partition indices
@@ -59,6 +67,69 @@ for k = 2:np
 end
 last = find(abs(FZIN - p(k)) <= eps);
 ip{end} = [ip{end}; last];
+
+
+%% 
+
+% create marker
+for c = 1:length(SCC.clusters)
+               
+    members = SCC.clusters{c};
+    
+    marker = 0*members; 
+        
+    for m = 1:numel(members)
+        for pp = 1:length(ip) 
+            if ~isempty(find(cell2mat(ip(pp)) == members(m), 1))
+                marker(m) = pp;              
+            end          
+        end       
+    end
+    
+    % marker per element
+    SCC.markerPerElem{c} = marker;
+    
+    % marker per cluster
+    if all( marker/max(marker) == ones(1,length(marker)) )
+        SCC.markerPerCluster{c} = max(marker);    
+    end
+    
+end
+
+% store clusters per partition
+PC = ip; 
+
+for i = 1:length(PC)
+    
+    aux = [];
+    for c = 1:length(SCC.markerPerCluster)
+                
+        mk = SCC.markerPerCluster{c};                
+        
+        if ~isempty(mk) && mk == i
+            aux = [aux,c];
+        end
+    end
+    
+    PC{i} = aux;
+    
+end
+
+% plot clusters per partition 
+
+for i = 12%:length(PC)
+
+    clust = PC{i};
+    
+    for c = 1:length(clust)        
+        Gfzi = extractSubgrid(G,Ind(SCC.clusters{c}));               
+        hold on
+        plotCellData(Gfzi,FZIN(SCC.clusters{c}));    
+    end
+    
+end
+
+
 
 % partition voxels
 vp = cell(size(ip));
@@ -73,38 +144,9 @@ for k = 1:numel(ip)
     C{k} = findConnectionsSimple(vp{k});
     if ~isempty(C{k})
         conn = [conn,k];
-        fprintf('---> Group %d: %d components found. Max. component: %d members.\n',k,C{k}.ncomp,C{k}.compSizes(1));
+        fprintf('---> Group %d: %d components found. Maximum component has %d members.\n',k,C{k}.ncomp,C{k}.compSizes(1));
     end
 end
-
-%% Computing logs and regression of clusters
-
-% performance parameters
-seps = 1e-1;
-R2min = 0.9;
-
-for gr = conn   
-    for comp = 1:C{gr}.ncomp                
-        members = C{gr}.compMembers{comp};
-        locs = ip{gr}(members); % get indices of cluster at reservoir    
-        
-        % compute logs and regression and stores into structure
-        C{gr}.Log10Phiz{comp} = P.Log10PHIZ(locs);
-        C{gr}.Log10RQIN{comp} = P.Log10RQIN(locs);
-        [R,m,b] = regression(P.Log10PHIZ(locs),P.Log10RQIN(locs),'one');
-        C{gr}.R2{comp} = R*R;
-        C{gr}.slope{comp} = m;
-        C{gr}.offset{comp} = b;    
-        
-        % performance
-        if R*R >= R2min && ( 1-seps <= m && m <= 1+seps )
-            C{gr}.performance{comp} = true;
-        else
-            C{gr}.performance{comp} = false;
-        end            
-    end    
-end
-
 
 
 %% Plot clusters per group
@@ -127,44 +169,12 @@ for gr = conn
         % range
         if numel(members) >= nel && ~isempty(locs) 
             Gfzi = extractSubgrid(G,Ind(locs));               
-            %hold on
-            %plotCellData(Gfzi,FZIN(locs));                  
+            hold on
+            plotCellData(Gfzi,FZIN(locs));                  
         end                
     end
     axis off vis3d
     colormap(jet); colorbar;
     tit = sprintf('plot FZI; partition: %d; min. cluster: %d',gr,nel);
     title(tit);
-end
-
-%% Plot only high-performance clusters 
-
-
-% loop over partitions 
-for gr = conn            
-    
-    figure   
-    % loop over connected clusters
-    for comp = 1:C{gr}.ncomp
-        
-        if C{gr}.performance{comp} == true
-                
-            members = C{gr}.compMembers{comp};
-            locs = ip{gr}(members); % get indices of cluster at reservoir    
-
-            % plot all the connected clusters with nel elements for given FZI
-            % range
-            if numel(members) >= nel && ~isempty(locs) 
-                Gfzi = extractSubgrid(G,Ind(locs));               
-                hold on
-                plotCellData(Gfzi,FZIN(locs));                  
-            end                
-        end
-    end
-    
-    axis off vis3d
-    colormap(jet); colorbar;
-    tit = sprintf('plot FZI; gr.: %d; HP clust.: %d',gr,comp);
-    title(tit);
-        
 end

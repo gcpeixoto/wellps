@@ -137,5 +137,5 @@ drtStG_log10 = findDRTConnections(drtlistG_log10, P, 'geometric','log10',nofs,'y
 drtStN_ln = findDRTConnections(drtlistN_ln, P, 'normalized','ln',nofs,'y', 1);
 drtStN_log10 = findDRTConnections(drtlistN_log10, P, 'normalized','log10',nofs,'y', 1);
 
-drT
+
 %% 

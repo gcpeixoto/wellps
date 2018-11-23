@@ -2,6 +2,9 @@
 % This case analyses outcomes from the Peixoto's algorithms 
 % for slope constrained clustering. 
 %
+% See Remark in wellps::case_unisim_allSCC.m. Part of this methodology was 
+% aborted.
+%
 %
 % METHODOLOGY: for our purposes, SCC algorithms are for partitioning.
 %              Each of them has produced partitions. Then, we go through 
@@ -58,30 +61,25 @@ Ind(G.cells.indexMap) = 1:G.cells.num;
 
 %% Load pre-computed partitionings 
 
-[SCCC,SCCT,SCCPY,SCCNL,SCC6N] = loadClusterSCC;
-SCC = {SCCC,SCCT,SCCPY,SCCNL,SCC6N};
-codename = {'SCCC','SCCT','SCCPY','SCCNL','SCC6N'};
+[SCCC,SCCT,SCCPY,SCCNL] = loadClusterSCC;
+SCC = {SCCC,SCCT,SCCPY,SCCNL};
+codename = {'SCCC','SCCT','SCCPY','SCCNL'};
 
 getidx = @(scc) cellfun(@numel,scc.clustering);
 [idx_c,idx_ct,idx_py,idx_nl] = ... 
 deal(getidx(SCCC),getidx(SCCT),getidx(SCCPY),getidx(SCCNL));
 
-% \TODO field is called 'clusters', instead 'clustering' in SCC6N. Correct this! 
-idx_6n = cellfun(@numel,SCC6N.clusters);
-
 getel = @(idx) idx(idx > minel);
 [idx_c,idx_ct,idx_py,idx_nl] = ... 
 deal(getel(idx_c),getel(idx_ct),getel(idx_py),getel(idx_nl));
 
-idx_6n = idx_6n(idx_6n >= minel);
-
 % Partitions are ordered, then we can get indices using length
 getidx = @(x) 1:length(x);
-[idx_c,idx_ct,idx_py,idx_nl,idx_6n] = ... 
-deal(getidx(idx_c),getidx(idx_ct),getidx(idx_py),getidx(idx_nl),getidx(idx_6n));
+[idx_c,idx_ct,idx_py,idx_nl] = ... 
+deal(getidx(idx_c),getidx(idx_ct),getidx(idx_py),getidx(idx_nl));
 
 % checks if there are empty clusters 
-IDX = {idx_c,idx_ct,idx_py,idx_nl,idx_6n};
+IDX = {idx_c,idx_ct,idx_py,idx_nl};
 aux = cellfun(@isempty,IDX);
 if any(aux)
     methodi = find(aux);
@@ -168,7 +166,6 @@ npc  = numel(idx_c);
 npct = numel(idx_ct);
 nppy = numel(idx_py);
 npnl = numel(idx_nl);
-np6n = numel(idx_6n);
 
 % mark which method do has clusters to be analysed
 goto_analysis = true(1,4);
@@ -288,36 +285,112 @@ else
    sccnl_pc = aux2;
 end
 
-%{ 
-TODO
-Arranging and filtering 
 TO_ANALYSIS = {sccc_pc,scct_pc,sccpy_pc,sccnl_pc};
 CONNS = {SCCC_connections,SCCT_connections,...
          SCCPY_connections,SCCNL_connections};
 toa = find(goto_analysis);
 
-dim_partitions = 0; 
-dim_clusters = 0;
-
-ALLPARTS = [];
-ALLCLUSTERS = [];
-for t = toa
-    partitions = TO_ANALYSIS{t}(:,1);  ALLPARTS = [ALLPARTS; partitions];  
-    
-    p = length(partitions);
-    dim_partitions = dim_partitions + p;
-       
-    clusters = TO_ANALYSIS{t}(:,2);  ALLCLUSTERS = [ALLCLUSTERS; clusters];
-    for pp = 1:p
-        dim_clusters = dim_clusters + ... 
-            numel(CONNS{t}.connections{partitions{pp}}.compSizes(clusters{pp}));                
-    end
-            
+% filter
+stay = numel(toa);
+for i = 1:stay
+    fprintf('---> Keeping %s clustering to study.\n',codename{toa(i)});
+    TO_STUDY.approach(i).name = codename{toa(i)};
+    TO_STUDY.approach(i).partitionsID = TO_ANALYSIS{toa(i)}(:,1);
+    TO_STUDY.approach(i).clustersID = TO_ANALYSIS{toa(i)}(:,2);
+    TO_STUDY.approach(i).All = CONNS{toa(i)};
 end
-dim_methods = t;
-%}
 
-                        
+%{ 
+% \TODO
+
+TO_ANALYSIS = {sccc_pc,scct_pc,sccpy_pc,sccnl_pc};
+CONNS = {SCCC_connections,SCCT_connections,...
+         SCCPY_connections,SCCNL_connections};
+toa = find(goto_analysis);
+
+INTERSECTIONS = TO_ANALYSIS;
+
+for i = toa
+    for j = toa
+        if i ~= j
+            
+            aux = [];
+            
+            Pi = TO_ANALYSIS{i}(:,1);
+            Pj = TO_ANALYSIS{j}(:,1);
+            
+            np = length(Pi); nq = length(Pj); 
+            
+            for p = 1:np                                
+                for q = 1:nq
+                    
+                    ip = cell2mat(Pi(p));
+                    iq = cell2mat(Pj(q));
+                    
+                    Cp = TO_ANALYSIS{ip}(:,2);                                                                
+                    Cq = TO_ANALYSIS{iq}(:,2);                                                                                                
+                    
+                    Clistp = cell2mat(Cp(p));
+                    Clistq = cell2mat(Cq(q));
+                    
+                    nc = numel(Clistp); nd = numel(Clistq);
+                                       
+                    for c = 1:nc
+                        for d = 1:nd
+                            
+                            cc = Clistp(c); 
+                            cd = Clistq(d); 
+                            
+                            Ci = CONNS{i}.connections{ip}.globalCompVoxelInds{cc};
+                            Cj = CONNS{j}.connections{iq}.globalCompVoxelInds{cd};
+                            
+                            if numel(Ci) == numel(Cj) & Ci == Cj
+                                aux = [aux; [j,iq,cd]];
+                                fprintf('%d %d %d\n',j,iq,cd);                                
+                            end
+                            
+                        end
+                    end
+                    
+                end
+            end
+            
+        end
+    end
+end
+%}    
+
+%% 3D ANALYSIS FOR MAJOR CLUSTERS
+
+napp = length(TO_STUDY.approach);
+
+for a = 2%:napp
+    
+    Pa = cell2mat(TO_STUDY.approach(a).partitionsID);
+       
+    Ca = TO_STUDY.approach(a).clustersID;
+    
+    figure
+    plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
+    'FaceAlpha',0.05, 'EdgeColor',[0.6,0.6,0.6],'EdgeAlpha',0.)
+    hold on 
+    
+    for p = 1:length(Pa)
+        cvi = TO_STUDY.approach(a).All.connections{p}.globalCompVoxelInds{Ca{p}(1)};
+        glob = Ind(cvi);
+        globn = glob(~isnan(glob));
+        Gi = extractSubgrid(G,globn);        
+        plotCellData(Gi,P.FZIN(cvi));
+        %Gi = extractSubgrid(G,Ind(cvi));        
+        %plotCellData(Gi,P.FZIN(cvi));
+        
+    end
+    
+
+end
+ 
+
+
 
 
 

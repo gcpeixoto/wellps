@@ -137,7 +137,35 @@ for ncomp = 1:G2.ncomp
 end
 
 
+%% Plotting clusters
+set(groot,'defaulttextinterpreter','latex');  
+set(groot,'defaultAxesTickLabelInterpreter','latex');  
+set(groot,'defaultLegendInterpreter','latex'); 
+
+Ind = nan(prod(G.cartDims),1);
+Ind(G.cells.indexMap) = 1:G.cells.num;
+
+figure
+plotGrid(G,...
+    'FaceColor',[0.6,0.6,0.6],'FaceAlpha',0.05, ...
+    'EdgeColor','none','EdgeAlpha',0.05);
+view([-183,33]), axis off tight
 
 
+
+% colors
+cmap = ...
+   [0.1804    0.0275    0.9569;
+    0.6353    0.6078    0.1255;
+    0.6275    0.1137    0.4745;
+    0.3294    0.4078    0.8588;
+    0.8039    0.8863    0.0471;
+    1.0000    0.5490    0.6941;
+    0.9843    0.3725    0.9804;
+    0.1294    0.2118    0.2863;
+    0.2353    0.4431    0.1373 ];
+
+% clusters
+colormap(cmap);
 
 
