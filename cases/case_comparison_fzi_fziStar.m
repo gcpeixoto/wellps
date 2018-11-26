@@ -2,7 +2,7 @@
 % DRT/DRT* computed from FZI/FZI* over UNISIM 1D
 
 %% Load grid 
-[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
+[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D.DATA');
 
 % compute geometry
 Gc = computeGeometry(G);

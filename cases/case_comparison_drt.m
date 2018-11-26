@@ -4,7 +4,7 @@
 % LN and LOG10 for different permeability averaging rules
 
 %% Load grid 
-[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
+[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
 
 % compute geometry
 Gc = computeGeometry(G);
