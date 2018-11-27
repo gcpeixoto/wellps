@@ -17,7 +17,7 @@ else
 end
 
 %% Load grid 
-[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D.DATA');
+[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
 
 % compute geometry
 Gc = computeGeometry(G);
@@ -38,8 +38,9 @@ active = find(~isnan(Ind));
 
 %% distribution of FZI 
 
-%{
 FZIN = P.FZIN;
+
+%{
 figure 
 subplot(121)
 title('FZI; KN-based')
@@ -218,7 +219,7 @@ end
 %% Search of HFUs based only on connections, without constraints 
 % Slope and R2 not guaranteed.
 
-turn_on = false;
+turn_on = true;
 
 if turn_on
 
