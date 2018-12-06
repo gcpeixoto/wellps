@@ -10,8 +10,8 @@
 % - Analyse and plot results 
 
 %% Load data 
-if exist('data/SCC6N_unisim_I.mat','file')
-    load('data/SCC6N_unisim_I.mat'); % get structure 'SCC'    
+if exist('data/SCC6N_unisim1.mat','file')
+    load('data/SCC6N_unisim1.mat'); % get structure 'SCC'    
 else
     error('You need to compute wellps:slopeConstrainedClustering6N.m before proceeding.')
 end

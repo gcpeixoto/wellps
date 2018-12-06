@@ -4,7 +4,7 @@
 % obtaining a 3D graph representation.
 
 %% Load grid 
-[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
+[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
 
 % compute geometry
 Gc = computeGeometry(G);
