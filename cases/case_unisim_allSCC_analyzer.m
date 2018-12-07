@@ -12,10 +12,7 @@
 
 %% INPUTS
 
-% consider partitions with >= minel elements
-minel = 10;
-
-% limit analysis for clusters with >= minc members
+% analyse clusters with >= minc members
 minc = 2;
 
 %% Reload data
@@ -66,15 +63,16 @@ plotCellData(Gi,P.FZIN(SCCC_connections.connections{1}.globalCompVoxelInds{1})) 
 %}
 
 
-%% CLUSTER INTERSECTION ANALYSIS
+%% CLUSTER ANALYSIS - FILTERING 
 
-% Check if there are intersections of clusters detected by each SCC method. 
-
-% number of partitions
+% number of partitions with (>= SCCC_connections.minel) elements (USEFUL PARTITIONS)
+% It also considers partitions that do not have clusters (connected components)
 npc  = length(SCCC_connections.connections);
 npct = length(SCCT_connections.connections);
 nppy = length(SCCPY_connections.connections);
 npnl = length(SCCNL_connections.connections);
+nup = [npc,npct,nppy,npnl];
+
 
 % mark which method do has clusters to be analysed
 goto_analysis = true(1,4);
@@ -210,7 +208,8 @@ for i = 1:stay
 end
 
 %{ 
-% \TODO
+% CLUSTER INTERSECTION ANALYSIS \TODO
+% Check if there are intersections of clusters detected by each SCC method. 
 
 TO_ANALYSIS = {sccc_pc,scct_pc,sccpy_pc,sccnl_pc};
 CONNS = {SCCC_connections,SCCT_connections,...
@@ -271,6 +270,7 @@ end
 
 %% 3D ANALYSIS FOR MAJOR CLUSTERS
 
+%{
 napp = length(TO_STUDY.approach);
 
 for a = 1%:napp
@@ -297,16 +297,38 @@ for a = 1%:napp
     
 
 end
- 
+%} 
 
-%% ANALYSIS BASED ON SLOPE AND R2
-% Each partition computed considers the total number of cells of the
-% original deck file and, hence, has more cells than the processed grid 
-% model. Hence, there are too many unitary partitions or with no value. 
-%
-% The analysis based on slope and R2 will filter the partitions 
-% that attend to the  
 
+%% ANALYSIS OF SLOPE AND R2 OF USEFUL PARTITIONS
+
+
+ncon = length(CONNS);
+for i = 1:ncon 
+    p = CONNS{i};
+    slopes = p.slope(1:nup(i));  
+    seps = p.seps;
+        
+    % I found some outliers with slope outside the margin here... 
+    % Need to get rid of them
+    figure
+    set(gca,'FontSize',14);
+    hold on    
+    points = find(1-seps <= slopes & slopes <= 1+seps);
+    slopes = slopes(points);
+    plot(points,slopes,'o','MarkerEdgeColor',[0.5,0.5,0.5],'MarkerFaceColor',[0.5,0.5,0.5])            
+    plot(points,ones(1,numel(points)),'k-')    
+    plot(points,ones(1,numel(points))*(1-seps),'r--')    
+    plot(points,ones(1,numel(points))*(1+seps),'r--')    
+    ylim([1-2*seps,1+2*seps])
+    xlabel('$\delta$','interpreter','latex')
+    ylabel('$s_{\delta}$','interpreter','latex')
+    yticks([1-seps,1,1+seps])
+    
+    fprintf('-> "%s"\n',codename{i});
+    fprintf('---> USEFUL PARTITIONS (# >= %d): %d \n',SCCC_connections.minel,numel(points));        
+    
+end
 
 
 

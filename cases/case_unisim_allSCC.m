@@ -97,5 +97,6 @@ SCC.slope = M;
 SCC.R2 = R2;
 SCC.B = B;
 SCC.execTime = telapsed;
+SCC.seps = seps;
 
 save(fname,'SCC');

@@ -21,11 +21,8 @@
 
 %% INPUTS
 
-% consider partitions with >= minel elements
-minel = 10;
-
-% limit analysis for clusters with >= minc members
-minc = 2;
+% plot info for partitions with >= minel elements
+minel = 2;
 
 %% Reload data
 fis = {'../mat/SCCC_connections.mat','../mat/SCCT_connections.mat',...
@@ -68,7 +65,7 @@ else
     [idx_c,idx_ct,idx_py,idx_nl] = ... 
     deal(getidx(SCCC),getidx(SCCT),getidx(SCCPY),getidx(SCCNL));
 
-    getel = @(idx) idx(idx > minel);
+    getel = @(idx) idx(idx >= minel);
     [idx_c,idx_ct,idx_py,idx_nl] = ... 
     deal(getel(idx_c),getel(idx_ct),getel(idx_py),getel(idx_nl));
 
@@ -122,9 +119,9 @@ else
                 SCC{sc}.connections{part} = [];   
 
             end
-
-        end 
-
+            
+            SCC{sc}.minel = minel; % stores this info
+        end        
     end
 
     % Save dataset relative to connected clusters
