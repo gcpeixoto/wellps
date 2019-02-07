@@ -45,6 +45,7 @@ Log10RQIN = P.Log10RQIN(:);
 Ind = nan(prod(G.cartDims),1);
 Ind(G.cells.indexMap) = 1:G.cells.num;
 
+
 %% Load pre-computed partitionings 
 
 codename = {'SCCC','SCCT','SCCPY','SCCNL'};
@@ -192,6 +193,9 @@ else
    sccnl_pc = aux2;
 end
 
+% number of effective partitions
+neffep = [length(sccc_pc),length(scct_pc),length(sccpy_pc),length(sccnl_pc)];
+
 TO_ANALYSIS = {sccc_pc,scct_pc,sccpy_pc,sccnl_pc};
 CONNS = {SCCC_connections,SCCT_connections,...
          SCCPY_connections,SCCNL_connections};
@@ -268,67 +272,237 @@ for i = toa
 end
 %}    
 
-%% 3D ANALYSIS FOR MAJOR CLUSTERS
-
-%{
-napp = length(TO_STUDY.approach);
-
-for a = 1%:napp
-    
-    Pa = cell2mat(TO_STUDY.approach(a).partitionsID);
-       
-    Ca = TO_STUDY.approach(a).clustersID;
-    
-    figure
-    plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
-    'FaceAlpha',0.05, 'EdgeColor',[0.6,0.6,0.6],'EdgeAlpha',0.)
-    hold on 
-    
-    for p = 1:length(Pa)
-        cvi = TO_STUDY.approach(a).All.connections{p}.globalCompVoxelInds{Ca{p}(1)};
-        glob = Ind(cvi);
-        globn = glob(~isnan(glob));
-        Gi = extractSubgrid(G,globn);        
-        plotCellData(Gi,P.FZIN(cvi));
-        %Gi = extractSubgrid(G,Ind(cvi));        
-        %plotCellData(Gi,P.FZIN(cvi));
-        
-    end
-    
-
-end
-%} 
-
 
 %% ANALYSIS OF SLOPE AND R2 OF USEFUL PARTITIONS
 
-
 ncon = length(CONNS);
-for i = 1:ncon 
-    p = CONNS{i};
-    slopes = p.slope(1:nup(i));  
-    seps = p.seps;
+for i = 1:ncon     
+    slopes = CONNS{i}.slope(1:nup(i));  
+    R2 = CONNS{i}.R2(1:nup(i));  
+    seps = CONNS{i}.seps;
         
     % I found some outliers with slope outside the margin here... 
     % Need to get rid of them
+    points = find(1-seps <= slopes & slopes <= 1+seps);   
+    slopes = slopes(points);     
+    R2 = R2(points); 
+    delta = 1:numel(points);
+    
+    % plot of slope distribution
     figure
     set(gca,'FontSize',14);
-    hold on    
-    points = find(1-seps <= slopes & slopes <= 1+seps);
-    slopes = slopes(points);
-    plot(points,slopes,'o','MarkerEdgeColor',[0.5,0.5,0.5],'MarkerFaceColor',[0.5,0.5,0.5])            
-    plot(points,ones(1,numel(points)),'k-')    
-    plot(points,ones(1,numel(points))*(1-seps),'r--')    
-    plot(points,ones(1,numel(points))*(1+seps),'r--')    
+    hold on, box on    
+    
+    plot(delta,slopes,'o','MarkerEdgeColor',[0.5,0.5,0.5],'MarkerFaceColor',[0.5,0.5,0.5])            
+    plot(delta,ones(1,numel(delta)),'k-')    
+    plot(delta,ones(1,numel(delta))*(1-seps),'r--')    
+    plot(delta,ones(1,numel(delta))*(1+seps),'r--')    
+    xlim([-1,max(delta)+1])
     ylim([1-2*seps,1+2*seps])
-    xlabel('$\delta$','interpreter','latex')
-    ylabel('$s_{\delta}$','interpreter','latex')
+    xlabel('$\gamma$','interpreter','latex')
+    ylabel('$s_{\gamma}$','interpreter','latex')
+    xticks([1,max(delta)])
     yticks([1-seps,1,1+seps])
+    hold off
+    fname = strcat('../tmp/slope_partitions',num2str(i),'.eps');
+    print(fname,'-depsc2')
+    
+    % plot of R2 distribution
+    figure 
+    set(gca,'FontSize',14);
+    hold on, box on         
+    plot(delta,R2,'o','MarkerEdgeColor',[0.5,0.5,0.5],'MarkerFaceColor',[0.5,0.5,0.5])            
+    plot(delta,ones(1,numel(delta))*mean(R2),'k-')    
+    plot(delta,ones(1,numel(delta))*min(R2),'r--')    
+    plot(delta,ones(1,numel(delta))*max(R2),'r--')    
+    xlim([-0.5,max(delta)+0.5])
+    ylim([min(R2)-0.1,max(R2)+0.1])
+    xlabel('$\gamma$','interpreter','latex')
+    ylabel('$R^2_{\gamma}$','interpreter','latex')
+    xticks([1,max(delta)])
+    yticks(mean(R2))
+    hold off
+    fname = strcat('../tmp/R2_partitions',num2str(i),'.eps');
+    print(fname,'-depsc2')
+    
     
     fprintf('-> "%s"\n',codename{i});
-    fprintf('---> USEFUL PARTITIONS (# >= %d): %d \n',SCCC_connections.minel,numel(points));        
+    fprintf('---> USEFUL PARTITIONS (# >= %d): %d \n',SCCC_connections.minel,numel(delta));        
+          
+end
+
+%% PLOTS OF EFFECTIVE PARTITIONS
+
+% Effective partitions are those that have connected clusters and 
+% whose clusters has >= minc elements. 
+
+% REMARK: We are going to exclude "SCCT" from the paper because it has the
+% almost the same approach as SCCC
+% The number of effective partitions per approach is given in the 
+% array 'neffep'. However, for SCCNL, a few outliers were found in the
+% SLOPE/R2 analysis and these partitions should be discounted in 'neffep(3)'.
+%
+% For instance, for the analysis of useful partitions with seps = 1e-1 and 
+% minel >= 2 + effective partitions with minc >=2, neffep(4) = 9, but 
+% we had 4 outliers. Then we must look at 'sccnl_pc' to check if, even with
+% the removal of the outliers, how many partitions still keep the 'minc'
+% constraint. In this test case, we end up with 5 effective partitions:
+% [1,4,6,8,9].
+
+% SAMPLE PARTITIONS
+for a = [1,3,4]
+            
+    f = figure;
+    plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
+    'FaceAlpha',0.05, 'EdgeColor',[0.6,0.6,0.6],'EdgeAlpha',0.1)
+    hold on, axis off vis3d, view([-96,43])
+        
+    if a == 1
+        chosen_parts = [29,30,31];
+    elseif a == 3
+        chosen_parts = [8,9,10];
+    elseif a == 4
+        chosen_parts = [4,6,8]; % in paper: 2,3,4
+    end
     
+    cs = [145,76,69; 96,210,69; 0,0,167]/255; colormap(f,cs);
+    icp = 1;    
+    for cp = chosen_parts        
+        part_cells = TO_STUDY.approach(a).All.partitioning{cp};            
+        plotGrid(G,Ind(part_cells),'FaceColor',cs(icp,:));                
+        icp = icp + 1;                
+    end
+    cbar = colorbar;
+    cbar.Ticks = [0.33,0.66,0.99];
+    if a == 4 
+        chosen_parts = [2,3,4];
+        cbar.TickLabels = num2cell(split(num2str(chosen_parts)));
+    else
+        cbar.TickLabels = num2cell(split(num2str(chosen_parts)));
+    end
+    cbar.FontSize = 14; 
+    fname = strcat('../tmp/effective_partitions',num2str(a),'.eps');
+    print(fname,'-depsc2')
+            
 end
 
 
+% SAMPLE CLUSTERS
+figure;
+plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
+    'FaceAlpha',0.05, 'EdgeColor',[0.6,0.6,0.6],'EdgeAlpha',0.1)
+hold on, axis off vis3d, view([-201,20])
 
+for a = [1,3,4]              
+
+    % chooses two first clusters of each sample partition
+    chosen_clusts = 1:2;              
+            
+    % SCCC (red tones)
+    if a == 1
+        chosen_parts = [29,30,31];       
+        cs = [1,0,0; 0.8,0,0; 0.5,0,0];
+        
+    % SCCPY (green tones)  
+    elseif a == 3
+        chosen_parts = [8,9,10];        
+        cs = [0,1,0; 0,0.8,0; 0,0.5,0];
+    
+    % SCCNL (blue tones)
+    elseif a == 4
+        chosen_parts = [4,6,8]; % in paper: 2,3,4
+        cs = [0,0.2,1; 0,0.2,0.5; 0,0.2,0.2];
+    end
+                 
+    % plot cluster location
+    for cp = 1:length(chosen_parts)           
+        for cc = 1:length(chosen_clusts)
+            cvi = TO_STUDY.approach(a).All.connections{chosen_parts(cp)}.globalCompVoxelInds{chosen_clusts(cc)};                        
+            plotGrid(G,Ind(cvi),'FaceColor',cs(cp,:));                      
+        end
+    end 
+                
+end
+fname = strcat('../tmp/effective_clusters_locations_134','.eps');
+print(fname,'-depsc2')
+   
+
+figure;
+plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
+    'FaceAlpha',0.05, 'EdgeColor',[0.6,0.6,0.6],'EdgeAlpha',0.1)
+hold on, axis off vis3d, view([-201,20])
+    
+for a = [1,3,4]              
+
+    % chooses two first clusters of each sample partition
+    chosen_clusts = 1:2;              
+            
+    % SCCC (red tones)
+    if a == 1
+        chosen_parts = [29,30,31];       
+        cs = [1,0,0; 0.8,0,0; 0.5,0,0];
+        
+    % SCCPY (green tones)  
+    elseif a == 3
+        chosen_parts = [8,9,10];        
+        cs = [0,1,0; 0,0.8,0; 0,0.5,0];
+    
+    % SCCNL (blue tones)
+    elseif a == 4
+        chosen_parts = [4,6,8]; % in paper: 2,3,4
+        cs = [0,0.2,1; 0,0.2,0.5; 0,0.2,0.2];
+    end    
+    
+    % plot cluster with FZI field
+    for cp = 1:length(chosen_parts)           
+        for cc = 1:length(chosen_clusts)
+            cvi = TO_STUDY.approach(a).All.connections{chosen_parts(cp)}.globalCompVoxelInds{chosen_clusts(cc)};                       
+            glob = Ind(cvi);
+            globn = glob(~isnan(glob));            
+            Gi = extractSubgrid(G,globn);                    
+            plotCellData(Gi,P.FZIN(cvi));   
+            %centers = G.cells.centroids(globn,:);            
+            cbar = colorbar;
+            cbar.FontSize = 14;
+        end
+    end 
+end
+
+fname = strcat('../tmp/effective_clusters_fzi_134','.eps');
+print(fname,'-depsc2')
+
+
+
+%% PLOT FZI Field @UNISIM-1-D
+
+figure 
+active = find(~isnan(Ind));
+FZIN = P.FZIN;  
+FZIN = FZIN(:);
+locs0 = find(FZIN > 0); 
+FZIN0 = FZIN(locs0);
+G0 = extractSubgrid(G,Ind(locs0));
+plotCellData(G0,FZIN0,'EdgeColor','none')
+axis off vis3d, view([-201,20])
+lighting flat
+cbar = colorbar;
+cbar.FontSize = 14;
+fname = strcat('../tmp/unisim1_fzi_nonzero','.eps');
+print(fname,'-depsc2')
+
+% Histogram FZI 
+figure
+histogram(FZIN0/max(FZIN0),'Normalization','probability','FaceColor',[0,0.2,0.5])
+ylabel('$Prob(FZI_n > 0)$','interpreter','latex');
+xlabel('$FZI_n > 0$','interpreter','latex');
+set(gca,'FontSize',14);
+fname = strcat('../tmp/unisim1_histogram_normalized_fzi_nonzero','.eps');
+print(fname,'-depsc2')
+
+figure;
+d = G.cells.centroids(Ind(locs0),3);
+plotCellData(G0, d,'EdgeColor',[0.5,0.5,0.5],'EdgeAlpha',0.5)
+cbar = colorbar; cbar.FontSize = 14;
+hold on, axis off vis3d, view([-201,20])
+fname = strcat('../tmp/unisim1_depth','.eps');
+print(fname,'-depsc2')

@@ -11,7 +11,7 @@ d = DirManager();
 d.mountDir();   
 
 %% Grid reading
-[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE_NO_TRAILING.DATA');
+[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
 
 %% Plot properties 
 % 'buildModel' delivers a processed grid structure G.
@@ -173,7 +173,9 @@ plotGrid(G,icol_inj_1(~isnan(icol_inj_1)),'FaceColor','b','EdgeColor','k')
 % injector 2
 plotGrid(G,icol_inj_2(~isnan(icol_inj_2)),'FaceColor','b','EdgeColor','k')
 
-% injector 3plotGrid(G,icol_inj_3(~isnan(icol_inj_3)),'FaceColor','b','EdgeColor','k')
+% injector 3
+plotGrid(G,icol_inj_3(~isnan(icol_inj_3)),'FaceColor','b','EdgeColor','k')
+
 % injector 4
 plotGrid(G,icol_inj_4(~isnan(icol_inj_4)),'FaceColor','b','EdgeColor','k')
 axis off vis3d
