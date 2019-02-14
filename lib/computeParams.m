@@ -20,7 +20,7 @@ function P = computeParams(G,PROPS)
 %}
 
 % checking
-p = {'PHI','KX','KY','KZ','ACTNUM'};
+p = {'PHI','KX','KY','KZ'};
 if ~isstruct(PROPS) 
     error('wellps:computeParams','PROPS is not a struct object');
 elseif ~all(ismember(p,fieldnames(PROPS)))

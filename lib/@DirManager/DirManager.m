@@ -41,7 +41,26 @@ classdef DirManager
          
      end
      
+     function tmpDir = createTempDataDir(mfilename)
+        %CREATETEMPDATADIR create a temporary directory to store 
+        % data output by the case in execution
+        
+        % Stores into '../tmp' to be ignored by .gitignore.
+        % Afterwards, the user must decide if it is garbage or not
+        tmpDir = strcat('../tmp/',mfilename,'-data');
+
+        if exist(tmpDir,'dir')
+            rmdir(tmpDir,'s');
+            mkdir(tmpDir);    
+            fprintf('----> Removing directory: "%s"\n',tmpDir);
+            fprintf('----> Recreating directory: "%s"\n',tmpDir);
+        else
+            mkdir(tmpDir);    
+            fprintf('----> Creating directory: "%s"\n',tmpDir);
+        end
+        
+     end
+     
  end
- 
 
 end
