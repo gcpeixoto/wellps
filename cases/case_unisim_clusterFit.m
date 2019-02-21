@@ -28,13 +28,13 @@ S = printStats(P,{'DRTN_LN'},'n');
 % testing.
 
 % list of DRTs to consider (if array, the order is important for plotting)
-drtlist = 14;
+drtlist = 13;
 
 % number of significant cells
 nofs = 30;
 
 % compute HFUs by DRT
-drtSt = findDRTConnections(drtlist, P, 'normalized','ln',nofs,'y', 1);
+drtSt = findDRTConnections(drtlist, P, 'normalized','log10',nofs,'n', 1);
 
 %% Computing graph metrics 
 % Here, we choose parameters to compute the graph metrics over all
@@ -61,11 +61,19 @@ lrn = fieldnames(linregrSt);
 clusterFit = cell(1,length(lrn)); 
 
 for v = 1:length(lrn)    
-    pm = cell2mat(linregrSt.(lrn{v}).('performance'));
-    c_hp = find(pm); % only high-performance clusters (pm == 1)     
-                    
-    % we have 4 patterns per cluster (4 angles)
-    clusterFit{v} = processClusterFit(G,drtlist(v),c_hp,'normalized','ln',[0,pi/6,pi/4,pi/3]);        
+    
+    if isfield(linregrSt.(lrn{v}),'performance')
+        pm = cell2mat(linregrSt.(lrn{v}).('performance'));
+        c_hp = find(pm); % only high-performance clusters (pm == 1)                                                                
+    
+        if ~isempty(c_hp)
+            % we have 4 patterns per cluster (4 angles)
+            clusterFit{v} = processClusterFit(G,drtlist(v),c_hp,'normalized','log10',[0,pi/6,pi/4,pi/3]);        
+        
+        else 
+            fprintf('----> No HP HFU was found for %s to be cluster-fittted.\n',lrn{v});      
+        end
+    end
                        
 end
 
