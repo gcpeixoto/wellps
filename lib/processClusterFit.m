@@ -90,11 +90,11 @@ for drt = drtValue
         load(fidm,'Maux');        
         
         % load linregr
-        load(fidr,'Laux');        
+        %load(fidr,'Laux');        
         
         % rename
         M = Maux; clear Maux;
-        L = Laux; clear Laux;      
+        %L = Laux; clear Laux;      
         
     end
 
