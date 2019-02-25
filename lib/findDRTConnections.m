@@ -125,7 +125,7 @@ switch ave
 
         end
     
-    case'normalized' 
+    case 'normalized' 
         
         KMEAN = P.KN;
         RQI = P.RQIN;
@@ -155,7 +155,70 @@ switch ave
             error('wellps:findDRTConnections','Log base not available.');
 
         end
+
         
+    case 'quadratic' 
+        
+        KMEAN = P.KQ;
+        RQI = P.RQIQ;
+        FZI = P.FZIQ;
+        
+        % .csv column names
+        kmean = 'kq,'; 
+        rqi = 'RQIQ,';
+        fzi = 'FZIQ,';
+        
+        if strcmp(base,'ln')     
+            
+            DRT = P.DRTQ_LN;            
+            LOGRQI = P.LNRQIQ;
+            
+            logrqi = 'lnRQIQ';
+    
+        elseif strcmp(base,'log10') 
+    
+            DRT = P.DRTQ_LOG10;            
+            LOGRQI = P.Log10RQIQ;
+            
+            logrqi = 'log10RQIQ';
+    
+        else
+        
+            error('wellps:findDRTConnections','Log base not available.');
+
+        end
+        
+    case 'harmonic'
+                
+        KMEAN = P.KH;
+        RQI = P.RQIH;
+        FZI = P.FZIH;
+        
+        % .csv column names
+        kmean = 'kh,'; 
+        rqi = 'RQIH,';
+        fzi = 'FZIH,';
+        
+        if strcmp(base,'ln')     
+            
+            DRT = P.DRTH_LN;            
+            LOGRQI = P.LNRQIH;
+            
+            logrqi = 'lnRQIH';
+    
+        elseif strcmp(base,'log10') 
+    
+            DRT = P.DRTH_LOG10;            
+            LOGRQI = P.Log10RQIH;
+            
+            logrqi = 'log10RQIH';
+    
+        else
+        
+            error('wellps:findDRTConnections','Log base not available.');
+
+        end
+                        
 end
 
 if ~all(drt)

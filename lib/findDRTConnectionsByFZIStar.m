@@ -119,7 +119,7 @@ switch ave
 
         end
     
-    case'normalized' 
+    case 'normalized' 
         
         KMEAN = P.KN;    
         FZIStar = P.FZINStar;  
@@ -146,6 +146,63 @@ switch ave
             error('wellps:findDRTConnectionsByFZIStar','Log base not available.');
 
         end
+        
+    case 'quadratic'
+        
+        KMEAN = P.KQ;    
+        FZIStar = P.FZIQStar;  
+        
+        % .csv column names
+        kmean = 'kq,'; 
+        fziStar = 'FZIQStar,';
+
+        
+        if strcmp(base,'ln')     
+                                    
+            DRTStar = P.DRTQStar_LN;                                    
+            LOG_SQRT_K = P.LNFZIStarQ_SQRTK;
+            logsqrtk = 'lnSQRTK_Q';
+    
+        elseif strcmp(base,'log10') 
+                
+            DRTStar = P.DRTQStar_LOG10;                                    
+            LOG_SQRT_K = P.Log10FZIStarQ_SQRTK;
+            logsqrtk = 'logSQRTK_Q';
+    
+        else
+        
+            error('wellps:findDRTConnectionsByFZIStar','Log base not available.');
+
+        end
+        
+    case 'harmonic'
+        
+        KMEAN = P.KH;    
+        FZIStar = P.FZIHStar;  
+        
+        % .csv column names
+        kmean = 'kh,'; 
+        fziStar = 'FZIHStar,';
+
+        
+        if strcmp(base,'ln')     
+                                    
+            DRTStar = P.DRTHStar_LN;                                    
+            LOG_SQRT_K = P.LNFZIStarH_SQRTK;
+            logsqrtk = 'lnSQRTK_H';
+    
+        elseif strcmp(base,'log10') 
+                
+            DRTStar = P.DRTHStar_LOG10;                                    
+            LOG_SQRT_K = P.Log10FZIStarH_SQRTK;
+            logsqrtk = 'logSQRTK_H';
+    
+        else
+        
+            error('wellps:findDRTConnectionsByFZIStar','Log base not available.');
+
+        end
+        
         
 end
 
