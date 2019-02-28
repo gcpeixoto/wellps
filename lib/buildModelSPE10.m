@@ -1,9 +1,11 @@
-function [G,PROPS] = buildModelSPE10
+function [G,PROPS] = buildModelSPE10(orig)
 % Read data file and build reservoir grid
 %
 % SYNOPSIS: 
 %   [G,PROPS] = buildModelSPE10;
 %
+% PARAMETERS: 
+%  orig  - flag used to load different data. 
 %
 % RETURNS:
 %  G     - structure already processed in MRST for SPE10 model
@@ -17,11 +19,24 @@ function [G,PROPS] = buildModelSPE10
 load('../benchmarks/spe10/mrst/G-SPE10.mat','G');
 
 % load rock structure 
+
+switch orig
+    case 'mrst'
 % original data is in [m^2]
-load('../benchmarks/spe10/mrst/rock-SPE10.mat');
-PROPS.PHI = reshape(rock.poro,G.cartDims);
-PROPS.KX = reshape(rock.perm(:,1),G.cartDims);
-PROPS.KY = reshape(rock.perm(:,2),G.cartDims);
-PROPS.KZ = reshape(rock.perm(:,3),G.cartDims);
+        load('../benchmarks/spe10/mrst/rock-SPE10.mat');
+        PROPS.PHI = reshape(rock.poro,G.cartDims);
+        PROPS.KX = reshape(rock.perm(:,1),G.cartDims);
+        PROPS.KY = reshape(rock.perm(:,2),G.cartDims);
+        PROPS.KZ = reshape(rock.perm(:,3),G.cartDims);
+        
+    case 'original'
+        load('../benchmarks/spe10/original/PHI.mat');
+        load('../benchmarks/spe10/original/KX.mat');
+        load('../benchmarks/spe10/original/KY.mat');
+        load('../benchmarks/spe10/original/KZ.mat');
+        PROPS.PHI = PHI;
+        PROPS.KX = KX;
+        PROPS.KY = KY;
+        PROPS.KZ = KZ;
 
-
+end
