@@ -6,6 +6,40 @@
 %
 % Dr. Gustavo Oliveira, @LaMEP
 
+%% Input parameters 
+
+% OPTIONS:
+%   -   drt_meth : 'DRT' or 'DRT*';
+%   -   perm_ave : 'a', for 'arithmetic' mean 
+%                  'g', for 'geometric' mean
+%                  'h', for 'harmonic' mean
+%                  'q', for 'quadratic' mean
+%                  'n', for 'normalized'
+%   -   log_base : 'ln' or 'log10';
+%   -   nofs_in  : number of significant components for clustering 
+%                  (arbitrary ellipsoid fit requires at least 10)
+%   -   model    : 'unisim1', for UNISIM-I-D or 
+%                  'spe10', for SPE 10th Project, model 2
+
+% clustering
+drt_meth = 'DRT*'; 
+perm_ave = 'h'; 
+log_base = 'ln'; 
+nofs_in = 10; 
+
+% analytics
+slope_eps = 0.1; 
+R2min = 0.9;
+
+% number of elements
+drt_ = 12; % if user inputs an invalid number, the program will suggest 
+           % the possibilities
+           
+% model 
+model = 'spe10';
+
+%% Standard directories 
+
 % class instantiations 
 d = DirManager(); 
 
@@ -13,28 +47,89 @@ d = DirManager();
 d.mountDir();   
 
 %% Grid reading
-[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
+
+switch model 
+    case 'unisim1'
+        [G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
+    case 'spe10'
+        [G,PROPS] = buildModelSPE10;
+end
 
 %% Parameters
 P = computeParams(G,PROPS);
 
+% fieldname
+bas = [];
+
+% append method
+if strcmp(drt_meth,'DRT')
+    bas = 'DRT';
+elseif strcmp(drt_meth,'DRT*')
+    bas = 'DRTStar';
+end
+
+% append average
+if strcmp(perm_ave,'a')
+    bas = strcat(bas,'A');
+    ave = 'arithmetic';    
+elseif strcmp(perm_ave,'g')
+    bas = strcat(bas,'G');
+    ave = 'geometric';
+elseif strcmp(perm_ave,'n')
+    bas = strcat(bas,'N');
+    ave = 'normalized';    
+elseif strcmp(perm_ave,'q')
+    bas = strcat(bas,'Q');
+    ave = 'quadratic';
+elseif strcmp(perm_ave,'h')
+    bas = strcat(bas,'H');    
+    ave = 'harmonic';
+end
+
+if strcmp(drt_meth,'DRT*')
+    aux = split(split(bas,'S'),'_');
+    aux2 = split(aux(2),'r');
+    bas = strcat('DRT',aux2(2),'Star');
+end
+
+
+% append log base
+if strcmp(log_base,'log10')
+    bas = strcat(bas,'_LOG10');
+elseif strcmp(log_base,'ln')
+    bas = strcat(bas,'_LN');
+end
+
+% convert to char 
+bas = char(bas);
+
 % field statistics for chosen properties
-S = printStats(P,{'DRTN_LN'},'n');
+S = printStats(P,{bas},'n');
 
 %% DRT choice 
-% From S, we see that the most populated DRT is 13. We then are going to
-% choose it in the list to locate HP-HFUs with significant cells above 30.
-% Both DRT and nofs can be freely chosen. Here, we have used them for
-% testing.
 
 % list of DRTs to consider (if array, the order is important for plotting)
-drtlist = 13;
+drtlist = S{1}(2:end,1);
+
+if ~ismember(drt_,drtlist)    
+    fprintf('!!! For your setup, only the following DRT choices are possible\n:');    
+    disp(drtlist)
+    error('Stopping...\n');
+else
+    drtlist = drt_;
+end
+
 
 % number of significant cells
-nofs = 30;
+nofs = nofs_in;
 
 % compute HFUs by DRT
-drtSt = findDRTConnections(drtlist, P, 'normalized','log10',nofs,'n', 1);
+drtSt = findDRTConnections(drtlist, P, ave, log_base, nofs, 'n', 1);
+
+if isempty(drtSt)
+    fprintf('----> No components for this DRT.\n'); 
+    return
+end
 
 %% Computing graph metrics 
 % Here, we choose parameters to compute the graph metrics over all
@@ -44,9 +139,9 @@ drtSt = findDRTConnections(drtlist, P, 'normalized','log10',nofs,'n', 1);
 % cells are ignored
 opt.nofs = nofs;    
 % linear regression slope +/- tolerance.
-opt.seps = 0.05;
+opt.seps = slope_eps;
 % minimum R2 coefficient tolerance.
-opt.R2min = 0.9;
+opt.R2min = R2min;
 
 % compute
 [metricsSt,linregrSt] = computeDRTGraphMetrics(opt,drtSt);
@@ -65,14 +160,26 @@ for v = 1:length(lrn)
     if isfield(linregrSt.(lrn{v}),'performance')
         pm = cell2mat(linregrSt.(lrn{v}).('performance'));
         c_hp = find(pm); % only high-performance clusters (pm == 1)                                                                
-    
+        
+        %c_hp = c_hp(1:5); % uncomment this line to force the method to 
+                           % get only the clusters you want. Some small
+                           % clusters are returning problems with the 
+                           % fitting while computing eigenvalues. \TODO
+        
+        % No HP HFU for this DRT
         if ~isempty(c_hp)
             % we have 4 patterns per cluster (4 angles)
-            clusterFit{v} = processClusterFit(G,drtlist(v),c_hp,'normalized','log10',[0,pi/6,pi/4,pi/3]);        
+            clusterFit{v} = processClusterFit(G,drtlist(v),c_hp,ave,log_base,[0,pi/6,pi/4,pi/3]);        
         
         else 
             fprintf('----> No HP HFU was found for %s to be cluster-fittted.\n',lrn{v});      
+            return
         end
+        
+    % No HP HFU for any
+    else
+            fprintf('----> No HP HFU was found for any DRT to be cluster-fittted.\n');      
+            return    
     end
                        
 end
