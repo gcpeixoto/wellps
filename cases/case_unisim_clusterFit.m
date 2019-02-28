@@ -36,7 +36,7 @@ drt_ = 12; % if user inputs an invalid number, the program will suggest
            % the possibilities
            
 % model 
-model = 'spe10';
+model = 'unisim1';
 
 %% Standard directories 
 
@@ -46,15 +46,19 @@ d = DirManager();
 % mounts standard directory tree
 d.mountDir();   
 
-%% Grid reading
-
+%% Load grid 
 switch model 
     case 'unisim1'
         [G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
+        
+        % compute geometry
+        G = computeGeometry(G);
+        
+    % \TODO conversion of permeability data from m2 to mD
     case 'spe10'
-        [G,PROPS] = buildModelSPE10;
+        [G,PROPS] = buildModelSPE10();
+        G = G;
 end
-
 %% Parameters
 P = computeParams(G,PROPS);
 

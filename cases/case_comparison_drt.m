@@ -3,23 +3,38 @@
 % Visualization of DRT distribution over UNISIM 1D from 
 % LN and LOG10 for different permeability averaging rules
 
+% REMARK: take the pair (KH,LN) for permeability and log base 
+%         appears to be the most promising choice among the tested
+%         due to its superior resolution in zoning.
+
 %% Default
 set(groot,'defaulttextinterpreter','latex');  
 set(groot, 'defaultAxesTickLabelInterpreter','latex');  
 set(groot, 'defaultLegendInterpreter','latex');
 
-FS = 16; % fontsize of labels
-log_base = 'log10'; % 'log10' or 'ln'
 hnb = 6; % number of histogram bins 
-nofs = 50; % number of significant cells (DRT connections) (only to save info)
+FS = 16; % fontsize of labels
 
 
+log_base = 'ln'; % 'log10' or 'ln'
+
+nofs = 10; % number of significant cells (DRT connections) (only to save info)
+
+model = 'unisim1';
 
 %% Load grid 
-[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
+switch model 
+    case 'unisim1'
+        [G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
+        
+        % compute geometry
+        G = computeGeometry(G);
+        
+    % \TODO conversion of permeability data from m2 to mD
+    case 'spe10'
+        [G,PROPS] = buildModelSPE10();
+end
 
-% compute geometry
-Gc = computeGeometry(G);
 
 %% Parameters
 % structure of several parameters (RQI, FZI, PHIZ, etc.)
@@ -209,6 +224,8 @@ switch log_base
         ylim([0,3.0e4]);
 end
 
+%print('../tmp/histogram-drt.eps','-depsc2');
+
 %% Plotting DRT distribution over reservoir
 
 for f = 1:5
@@ -223,6 +240,9 @@ for f = 1:5
     cbar.Box = 'off';  
     aux = split(flds{f},'_'); 
     cbar.Label.String = [aux(1),' ',aux(2)];
+    
+    fn = strcat('../tmp/3d-zoning-drt-',num2str(f),'.eps');
+    print(fn,'-depsc2');
 end      
 
 % - DRT* > 0 & all averages
@@ -341,6 +361,8 @@ switch log_base
         ylim([0,3.0e4]);
 end
 
+%print('../histogram-drt*.eps','-depsc2');
+
 %% Plotting DRT* distribution over reservoir
 
 for f = 1:5
@@ -355,6 +377,9 @@ for f = 1:5
     cbar.Box = 'off';      
     aux = split(flds{f},'_'); 
     cbar.Label.String = [aux(1),' ',aux(2)];
+    
+    fn = strcat('../tmp/3d-zoning-drt*-',num2str(f),'.eps');
+    %print(fn,'-depsc2');
 end      
 
 
