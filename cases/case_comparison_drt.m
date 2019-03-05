@@ -20,7 +20,7 @@ log_base = 'ln'; % 'log10' or 'ln'
 
 nofs = 10; % number of significant cells (DRT connections) (only to save info)
 
-model = 'unisim1';
+model = 'spe10';
 
 %% Load grid 
 switch model 
@@ -32,7 +32,7 @@ switch model
         
     % \TODO conversion of permeability data from m2 to mD
     case 'spe10'
-        [G,PROPS] = buildModelSPE10();
+        [G,PROPS] = buildModelSPE10('original');
 end
 
 

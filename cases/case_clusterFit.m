@@ -1,8 +1,8 @@
-%% case_unisim_clusterFit
+%% CASE STUDY: CLUSTER ELLIPSOID-FIT
 %
-% This script will search for nonuniform 5-spot well patterns
-% wrapping HFUs over the UNISIM reservoir model
-%
+% This script will search for nonuniform injector/producer 5-spot 
+% well patterns wrapping HFUs over different reservoir models 
+% through the ellipsoid-fitting technique
 %
 % Dr. Gustavo Oliveira, @LaMEP
 
@@ -22,8 +22,8 @@
 %                  'spe10', for SPE 10th Project, model 2
 
 % clustering
-drt_meth = 'DRT*'; 
-perm_ave = 'h'; 
+drt_meth = 'DRT'; 
+perm_ave = 'g'; 
 log_base = 'ln'; 
 nofs_in = 10; 
 
@@ -32,11 +32,11 @@ slope_eps = 0.1;
 R2min = 0.9;
 
 % number of elements
-drt_ = 12; % if user inputs an invalid number, the program will suggest 
+drt_ = 5; % if user inputs an invalid number, the program will suggest 
            % the possibilities
            
 % model 
-model = 'unisim1';
+model = 'spe10';
 
 %% Standard directories 
 
@@ -56,8 +56,7 @@ switch model
         
     % \TODO conversion of permeability data from m2 to mD
     case 'spe10'
-        [G,PROPS] = buildModelSPE10();
-        G = G;
+        [G,PROPS] = buildModelSPE10('original');        
 end
 %% Parameters
 P = computeParams(G,PROPS);
@@ -165,7 +164,7 @@ for v = 1:length(lrn)
         pm = cell2mat(linregrSt.(lrn{v}).('performance'));
         c_hp = find(pm); % only high-performance clusters (pm == 1)                                                                
         
-        %c_hp = c_hp(1:5); % uncomment this line to force the method to 
+        c_hp = c_hp(1:4); % uncomment this line to force the method to 
                            % get only the clusters you want. Some small
                            % clusters are returning problems with the 
                            % fitting while computing eigenvalues. \TODO
@@ -173,7 +172,7 @@ for v = 1:length(lrn)
         % No HP HFU for this DRT
         if ~isempty(c_hp)
             % we have 4 patterns per cluster (4 angles)
-            clusterFit{v} = processClusterFit(G,drtlist(v),c_hp,ave,log_base,[0,pi/6,pi/4,pi/3]);        
+            clusterFit{v} = processClusterFit(model,G,drtlist(v),c_hp,ave,log_base,[0,pi/6,pi/4,pi/3]);        
         
         else 
             fprintf('----> No HP HFU was found for %s to be cluster-fittted.\n',lrn{v});      
@@ -193,7 +192,7 @@ end
 %% Plot nonuniform 5-spot well pattern for a given HP HFU
 
 % selector
-tell_drtlistIndex = 1; % in this case, 1: DRT13
+tell_drtlistIndex = 1; % first DRT of the list (input)
 tell_cluster = c_hp; % cluster index in c_hp
 tell_pattern = [1,2,3,4]; % pattern 1, 2, 3 or 4
 
