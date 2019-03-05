@@ -1,4 +1,4 @@
-function clusterFitSt = processClusterFit(G,drtValue,idcomp,ave,base,theta)
+function clusterFitSt = processClusterFit(model,G,drtValue,idcomp,ave,base,theta)
 % PROCESSCLUSTERFIT Determines fit parameters in order to setup nonuniform 
 % (5-spot) well patterns based on a best-fit ellipsoid obtained 
 % from the convex hull points of the selected cluster(s).
@@ -51,7 +51,7 @@ function clusterFitSt = processClusterFit(G,drtValue,idcomp,ave,base,theta)
 %% Load cluster info
 
 % create output dir
-outDir = '../mat/ClusterFitData/';
+outDir = strcat('../mat/ClusterFitData/',model);
 if exist(outDir,'dir') ~= 7
     warning('wellps:processClusterFit',...
         ['Creating data directory into:',...
@@ -606,6 +606,6 @@ for drt = drtValue
     end               
     
     % save to .mat (separated by DRT)
-    save( strcat(outDir,'DRT_',ave,'_',base,'_',num2str( drt ),'_clusterFitData','.mat'),'clusterFitSt');
+    save( strcat(outDir,'DRT_',ave,'_',base,'_',num2str( drt ),'_clusterFitData_',model,'.mat'),'clusterFitSt');
 end
 
