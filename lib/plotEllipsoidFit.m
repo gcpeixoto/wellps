@@ -132,6 +132,9 @@ p.FaceLighting = 'gouraud';
 
 camproj perspective
 
+view([-85,56])
+
+
 %% Decoration
 
 hold on
@@ -207,14 +210,16 @@ l_mcp4.LineStyle = '-';
 l_mcp4.LineWidth = 2;
 %}
 
-legelip = legend('$\mathcal{E}$','$O$','$P_1$','$P_2$','$P_3$','$P_4$','$M_{D,q}$','$E_x$','$E_y$','$E_z$',...
-                 '$\tilde{P}_1$','$\tilde{P}_2$','$\tilde{P}_3$','$\tilde{P}_4$'); 
+legelip = legend('$\mathcal{E}$','${\bf c}$','${\bf q}_1$','${\bf q}_2$','${\bf q}_3$','${\bf q}_4$','$M_{D,q}$','$E_1$','$E_2$','$E_3$',...
+                 '$\check{\bf q}_1$','$\check{\bf q}_2$','$\check{\bf q}_3$','$\check{\bf q}_4$'); 
 legelip.Location = 'bestoutside';
 legelip.Interpreter = 'latex';
 legelip.FontSize = 16;
 legelip.EdgeColor = 'none';
 legelip.Color = [0.9,0.9,0.9];
 
+
+%print('elip.eps','-depsc2')
 
 %% Cluster domain
 
@@ -247,6 +252,9 @@ plotWell(G,W,'color','k');
 
 pg1.FaceLighting = 'flat';  pg2.FaceLighting = 'flat';
 
+view([-90,65])
+
+%print('wpd.eps','-depsc2')
 
 % ==== DISPLACED REFERENCE FRAME
 %{
