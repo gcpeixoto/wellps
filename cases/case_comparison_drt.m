@@ -7,6 +7,8 @@
 %         appears to be the most promising choice among the tested
 %         due to its superior resolution in zoning.
 
+warning('THIS CASE IS EXTREMELY COSTLY!!!');
+
 %% Default
 set(groot,'defaulttextinterpreter','latex');  
 set(groot, 'defaultAxesTickLabelInterpreter','latex');  
@@ -18,9 +20,9 @@ FS = 16; % fontsize of labels
 
 log_base = 'ln'; % 'log10' or 'ln'
 
-nofs = 10; % number of significant cells (DRT connections) (only to save info)
+nofs = 100; % number of significant cells (DRT connections) (only to save info)
 
-model = 'spe10';
+model = 'unisim1';
 
 %% Load grid 
 switch model 
@@ -108,281 +110,288 @@ Ind(G.cells.indexMap) = 1:G.cells.num;
 % cells with value
 active = find(~isnan(Ind));
 
-%% plotting DRT Histograms 
 
-switch log_base
-    
-    case 'ln'
-        % - DRT > 0 & all averages 
-        b1d1a = P.DRTA_LN(:); b1d1a = b1d1a(active); b1d1a = b1d1a(b1d1a>0);
-        b1d1g = P.DRTG_LN(:); b1d1g = b1d1g(active); b1d1g = b1d1g(b1d1g>0);
-        b1d1n = P.DRTN_LN(:); b1d1n = b1d1n(active); b1d1n = b1d1n(b1d1n>0);
-        b1d1q = P.DRTQ_LN(:); b1d1q = b1d1q(active); b1d1q = b1d1q(b1d1q>0);
-        b1d1h = P.DRTH_LN(:); b1d1h = b1d1h(active); b1d1h = b1d1h(b1d1h>0);
-        
-        % fields for plotting
-        flds = {'DRTA_LN','DRTG_LN','DRTN_LN','DRTQ_LN','DRTH_LN'};
-    
-    case 'log10'
-        
-        b1d1a = P.DRTA_LOG10(:); b1d1a = b1d1a(active); b1d1a = b1d1a(b1d1a>0);
-        b1d1g = P.DRTG_LOG10(:); b1d1g = b1d1g(active); b1d1g = b1d1g(b1d1g>0);
-        b1d1n = P.DRTN_LOG10(:); b1d1n = b1d1n(active); b1d1n = b1d1n(b1d1n>0);
-        b1d1q = P.DRTQ_LOG10(:); b1d1q = b1d1q(active); b1d1q = b1d1q(b1d1q>0);
-        b1d1h = P.DRTH_LOG10(:); b1d1h = b1d1h(active); b1d1h = b1d1h(b1d1h>0);
-        
-        % fields for plotting
-        flds = {'DRTA_LOG10','DRTG_LOG10', ...
-                'DRTN_LOG10','DRTQ_LOG10','DRTH_LOG10'};    
-        
+plot_all = false;
+
+if plot_all == true
+
+    %% plotting DRT Histograms 
+
+    switch log_base
+
+        case 'ln'
+            % - DRT > 0 & all averages 
+            b1d1a = P.DRTA_LN(:); b1d1a = b1d1a(active); b1d1a = b1d1a(b1d1a>0);
+            b1d1g = P.DRTG_LN(:); b1d1g = b1d1g(active); b1d1g = b1d1g(b1d1g>0);
+            b1d1n = P.DRTN_LN(:); b1d1n = b1d1n(active); b1d1n = b1d1n(b1d1n>0);
+            b1d1q = P.DRTQ_LN(:); b1d1q = b1d1q(active); b1d1q = b1d1q(b1d1q>0);
+            b1d1h = P.DRTH_LN(:); b1d1h = b1d1h(active); b1d1h = b1d1h(b1d1h>0);
+
+            % fields for plotting
+            flds = {'DRTA_LN','DRTG_LN','DRTN_LN','DRTQ_LN','DRTH_LN'};
+
+        case 'log10'
+
+            b1d1a = P.DRTA_LOG10(:); b1d1a = b1d1a(active); b1d1a = b1d1a(b1d1a>0);
+            b1d1g = P.DRTG_LOG10(:); b1d1g = b1d1g(active); b1d1g = b1d1g(b1d1g>0);
+            b1d1n = P.DRTN_LOG10(:); b1d1n = b1d1n(active); b1d1n = b1d1n(b1d1n>0);
+            b1d1q = P.DRTQ_LOG10(:); b1d1q = b1d1q(active); b1d1q = b1d1q(b1d1q>0);
+            b1d1h = P.DRTH_LOG10(:); b1d1h = b1d1h(active); b1d1h = b1d1h(b1d1h>0);
+
+            % fields for plotting
+            flds = {'DRTA_LOG10','DRTG_LOG10', ...
+                    'DRTN_LOG10','DRTQ_LOG10','DRTH_LOG10'};    
+
+    end
+
+    f = figure;
+
+    % -- arithmetic
+    h1a = histfit(b1d1a,hnb,'lognormal');
+
+    % patch
+    h1a(1).EdgeColor = 'None';
+    h1a(1).FaceColor = [0.7,0.0,0.0];
+    h1a(1).FaceAlpha = 0.1;
+
+    % line
+    h1a(2).LineWidth = 2; 
+    h1a(2).Color = [0.7,0.0,0.0];
+
+    hold on 
+
+    % -- geometric
+    h1g = histfit(b1d1g,hnb,'lognormal');
+
+    % patch
+    h1g(1).EdgeColor = 'None';
+    h1g(1).FaceColor = [0.0,0.7,0.0];
+    h1g(1).FaceAlpha = 0.1;
+
+    % line
+    h1g(2).LineWidth = 2; 
+    h1g(2).Color = [0.0,0.7,0.0];
+
+    % -- normalised
+    h1n = histfit(b1d1n,hnb,'lognormal');
+
+    % patch
+    h1n(1).EdgeColor = 'None';
+    h1n(1).FaceColor = [0.0,0.0,0.7];
+    h1n(1).FaceAlpha = 0.1;
+
+    % line
+    h1n(2).LineWidth = 2; 
+    h1n(2).Color = [0.0,0.0,0.7];
+
+    % -- quadratic
+    h1q = histfit(b1d1q,hnb,'lognormal');
+
+    % patch
+    h1q(1).EdgeColor = 'None';
+    h1q(1).FaceColor = [0.7,0.7,0.7];
+    h1q(1).FaceAlpha = 0.1;
+
+    % line
+    h1q(2).LineWidth = 2; 
+    h1q(2).Color = [0.7,0.7,0.7];
+
+    % -- harmonic
+    h1h = histfit(b1d1h,hnb,'lognormal');
+
+    % patch
+    h1h(1).EdgeColor = 'None';
+    h1h(1).FaceColor = [0.7,0.7,0.0];
+    h1h(1).FaceAlpha = 0.1;
+
+    % line
+    h1h(2).LineWidth = 2; 
+    h1h(2).Color = [0.8,0.8,0.0];
+
+    % Customising legend entries 
+    set(get(get(h1a(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+    set(get(get(h1g(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+    set(get(get(h1n(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+    set(get(get(h1q(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+    set(get(get(h1h(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+
+    leg = legend('$\mathcal{N}_A$','$\mathcal{N}_G$','$\mathcal{N}_N$',... 
+           '$\mathcal{N}_Q$','$\mathcal{N}_H$');
+    leg.FontSize = FS;
+
+    % labels 
+    xlabel('$DRT$','FontSize',FS);
+    ylabel('$n_{e}$','FontSize',FS);
+
+    % axis limits
+    switch log_base
+        case 'ln'
+            ylim([0,2.2e4]);
+        case 'log10'
+            ylim([0,3.0e4]);
+    end
+
+    %print('../tmp/histogram-drt.eps','-depsc2');
+
+
+    %% Plotting DRT distribution over reservoir
+
+
+    for f = 1:5
+        figure;
+        prop = P.(flds{f});     
+        prop = prop(:); prop = prop(active);    
+        plotCellData(G,prop,'EdgeColor','none','BackFaceLighting','lit');
+        axis off vis3d
+        colormap(jet)
+        cbar = colorbar;
+        cbar.FontSize = FS;
+        cbar.Box = 'off';  
+        aux = split(flds{f},'_'); 
+        cbar.Label.String = [aux(1),' ',aux(2)];
+
+        fn = strcat('../tmp/3d-zoning-drt-',num2str(f),'.eps');
+        %print(fn,'-depsc2');
+    end      
+
+    % - DRT* > 0 & all averages
+    switch log_base
+
+        case 'ln'
+
+            b1d2a = P.DRTAStar_LN(:); b1d2a = b1d2a(active); b1d2a = b1d2a(b1d2a>0);
+            b1d2g = P.DRTGStar_LN(:); b1d2g = b1d2g(active); b1d2g = b1d2g(b1d2g>0);
+            b1d2n = P.DRTNStar_LN(:); b1d2n = b1d2n(active); b1d2n = b1d2n(b1d2n>0);
+            b1d2q = P.DRTQStar_LN(:); b1d2q = b1d2q(active); b1d2q = b1d2q(b1d2q>0);
+            b1d2h = P.DRTHStar_LN(:); b1d2h = b1d2h(active); b1d2h = b1d2h(b1d2h>0);
+
+            % fields for plotting
+            flds = {'DRTAStar_LN','DRTGStar_LN',... 
+                    'DRTNStar_LN','DRTQStar_LN','DRTHStar_LN'};
+
+        case 'log10'
+
+            b1d2a = P.DRTAStar_LOG10(:); b1d2a = b1d2a(active); b1d2a = b1d2a(b1d2a>0);
+            b1d2g = P.DRTGStar_LOG10(:); b1d2g = b1d2g(active); b1d2g = b1d2g(b1d2g>0);
+            b1d2n = P.DRTNStar_LOG10(:); b1d2n = b1d2n(active); b1d2n = b1d2n(b1d2n>0);
+            b1d2q = P.DRTQStar_LOG10(:); b1d2q = b1d2q(active); b1d2q = b1d2q(b1d2q>0);
+            b1d2h = P.DRTHStar_LOG10(:); b1d2h = b1d2h(active); b1d2h = b1d2h(b1d2h>0);
+
+              % fields for plotting
+            flds = {'DRTAStar_LOG10','DRTGStar_LOG10', ...
+                    'DRTNStar_LOG10','DRTQStar_LOG10','DRTHStar_LOG10'};    
+    end
+
+    f2 = figure;
+
+    % -- arithmetic
+    h1a = histfit(b1d2a,hnb,'lognormal');
+
+    % patch
+    h1a(1).EdgeColor = 'None';
+    h1a(1).FaceColor = [0.7,0.0,0.0];
+    h1a(1).FaceAlpha = 0.1;
+
+    % line
+    h1a(2).LineWidth = 2; 
+    h1a(2).Color = [0.7,0.0,0.0];
+
+    hold on 
+
+    % -- geometric
+    h1g = histfit(b1d2g,hnb,'lognormal');
+
+    % patch
+    h1g(1).EdgeColor = 'None';
+    h1g(1).FaceColor = [0.0,0.7,0.0];
+    h1g(1).FaceAlpha = 0.1;
+
+    % line
+    h1g(2).LineWidth = 2; 
+    h1g(2).Color = [0.0,0.7,0.0];
+
+    % -- normalised
+    h1n = histfit(b1d2n,hnb,'lognormal');
+
+    % patch
+    h1n(1).EdgeColor = 'None';
+    h1n(1).FaceColor = [0.0,0.0,0.7];
+    h1n(1).FaceAlpha = 0.1;
+
+    % line
+    h1n(2).LineWidth = 2; 
+    h1n(2).Color = [0.0,0.0,0.7];
+
+    % -- quadratic
+    h1q = histfit(b1d2q,hnb,'lognormal');
+
+    % patch
+    h1q(1).EdgeColor = 'None';
+    h1q(1).FaceColor = [0.7,0.7,0.7];
+    h1q(1).FaceAlpha = 0.1;
+
+    % line
+    h1q(2).LineWidth = 2; 
+    h1q(2).Color = [0.7,0.7,0.7];
+
+    % -- harmonic
+    h1h = histfit(b1d2h,hnb,'lognormal');
+
+    % patch
+    h1h(1).EdgeColor = 'None';
+    h1h(1).FaceColor = [0.7,0.7,0.0];
+    h1h(1).FaceAlpha = 0.1;
+
+    % line
+    h1h(2).LineWidth = 2; 
+    h1h(2).Color = [0.8,0.8,0.0];
+
+    % Customising legend entries 
+    set(get(get(h1a(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+    set(get(get(h1g(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+    set(get(get(h1n(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+    set(get(get(h1q(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+    set(get(get(h1h(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
+
+    leg = legend('$\mathcal{N}^{*}_A$','$\mathcal{N}^{*}_G$', ... 
+                 '$\mathcal{N}^{*}_N$','$\mathcal{N}^{*}_Q$', ... 
+                 '$\mathcal{N}^{*}_H$');
+    leg.FontSize = FS;
+
+    % labels 
+    xlabel('$DRT^{*}$','FontSize',FS);
+    ylabel('$n_{e}$','FontSize',FS);
+
+    % axis limits
+    switch log_base
+        case 'ln'
+            ylim([0,2.2e4]);
+        case 'log10'
+            ylim([0,3.0e4]);
+    end
+
+    %print('../histogram-drt*.eps','-depsc2');
+
+    %% Plotting DRT* distribution over reservoir
+
+    for f = 1:5
+        figure;
+        prop = P.(flds{f});     
+        prop = prop(:); prop = prop(active);    
+        plotCellData(G,prop,'EdgeColor','none','BackFaceLighting','lit');
+        axis off vis3d
+        colormap(jet)
+        cbar = colorbar;
+        cbar.FontSize = FS;
+        cbar.Box = 'off';      
+        aux = split(flds{f},'_'); 
+        cbar.Label.String = [aux(1),' ',aux(2)];
+
+        fn = strcat('../tmp/3d-zoning-drt*-',num2str(f),'.eps');
+        %print(fn,'-depsc2');
+    end      
+
 end
-
-f = figure;
-
-% -- arithmetic
-h1a = histfit(b1d1a,hnb,'lognormal');
-
-% patch
-h1a(1).EdgeColor = 'None';
-h1a(1).FaceColor = [0.7,0.0,0.0];
-h1a(1).FaceAlpha = 0.1;
-
-% line
-h1a(2).LineWidth = 2; 
-h1a(2).Color = [0.7,0.0,0.0];
-  
-hold on 
-
-% -- geometric
-h1g = histfit(b1d1g,hnb,'lognormal');
-
-% patch
-h1g(1).EdgeColor = 'None';
-h1g(1).FaceColor = [0.0,0.7,0.0];
-h1g(1).FaceAlpha = 0.1;
-
-% line
-h1g(2).LineWidth = 2; 
-h1g(2).Color = [0.0,0.7,0.0];
-
-% -- normalised
-h1n = histfit(b1d1n,hnb,'lognormal');
-
-% patch
-h1n(1).EdgeColor = 'None';
-h1n(1).FaceColor = [0.0,0.0,0.7];
-h1n(1).FaceAlpha = 0.1;
-
-% line
-h1n(2).LineWidth = 2; 
-h1n(2).Color = [0.0,0.0,0.7];
-
-% -- quadratic
-h1q = histfit(b1d1q,hnb,'lognormal');
-
-% patch
-h1q(1).EdgeColor = 'None';
-h1q(1).FaceColor = [0.7,0.7,0.7];
-h1q(1).FaceAlpha = 0.1;
-
-% line
-h1q(2).LineWidth = 2; 
-h1q(2).Color = [0.7,0.7,0.7];
-
-% -- harmonic
-h1h = histfit(b1d1h,hnb,'lognormal');
-
-% patch
-h1h(1).EdgeColor = 'None';
-h1h(1).FaceColor = [0.7,0.7,0.0];
-h1h(1).FaceAlpha = 0.1;
-
-% line
-h1h(2).LineWidth = 2; 
-h1h(2).Color = [0.8,0.8,0.0];
-
-% Customising legend entries 
-set(get(get(h1a(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-set(get(get(h1g(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-set(get(get(h1n(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-set(get(get(h1q(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-set(get(get(h1h(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-
-leg = legend('$\mathcal{N}_A$','$\mathcal{N}_G$','$\mathcal{N}_N$',... 
-       '$\mathcal{N}_Q$','$\mathcal{N}_H$');
-leg.FontSize = FS;
-
-% labels 
-xlabel('$DRT$','FontSize',FS);
-ylabel('$n_{e}$','FontSize',FS);
-
-% axis limits
-switch log_base
-    case 'ln'
-        ylim([0,2.2e4]);
-    case 'log10'
-        ylim([0,3.0e4]);
-end
-
-%print('../tmp/histogram-drt.eps','-depsc2');
-
-%% Plotting DRT distribution over reservoir
-
-for f = 1:5
-    figure;
-    prop = P.(flds{f});     
-    prop = prop(:); prop = prop(active);    
-    plotCellData(G,prop,'EdgeColor','none','BackFaceLighting','lit');
-    axis off vis3d
-    colormap(jet)
-    cbar = colorbar;
-    cbar.FontSize = FS;
-    cbar.Box = 'off';  
-    aux = split(flds{f},'_'); 
-    cbar.Label.String = [aux(1),' ',aux(2)];
-    
-    fn = strcat('../tmp/3d-zoning-drt-',num2str(f),'.eps');
-    print(fn,'-depsc2');
-end      
-
-% - DRT* > 0 & all averages
-switch log_base
-    
-    case 'ln'
-    
-        b1d2a = P.DRTAStar_LN(:); b1d2a = b1d2a(active); b1d2a = b1d2a(b1d2a>0);
-        b1d2g = P.DRTGStar_LN(:); b1d2g = b1d2g(active); b1d2g = b1d2g(b1d2g>0);
-        b1d2n = P.DRTNStar_LN(:); b1d2n = b1d2n(active); b1d2n = b1d2n(b1d2n>0);
-        b1d2q = P.DRTQStar_LN(:); b1d2q = b1d2q(active); b1d2q = b1d2q(b1d2q>0);
-        b1d2h = P.DRTHStar_LN(:); b1d2h = b1d2h(active); b1d2h = b1d2h(b1d2h>0);
-        
-        % fields for plotting
-        flds = {'DRTAStar_LN','DRTGStar_LN',... 
-                'DRTNStar_LN','DRTQStar_LN','DRTHStar_LN'};
-    
-    case 'log10'
-        
-        b1d2a = P.DRTAStar_LOG10(:); b1d2a = b1d2a(active); b1d2a = b1d2a(b1d2a>0);
-        b1d2g = P.DRTGStar_LOG10(:); b1d2g = b1d2g(active); b1d2g = b1d2g(b1d2g>0);
-        b1d2n = P.DRTNStar_LOG10(:); b1d2n = b1d2n(active); b1d2n = b1d2n(b1d2n>0);
-        b1d2q = P.DRTQStar_LOG10(:); b1d2q = b1d2q(active); b1d2q = b1d2q(b1d2q>0);
-        b1d2h = P.DRTHStar_LOG10(:); b1d2h = b1d2h(active); b1d2h = b1d2h(b1d2h>0);
-        
-          % fields for plotting
-        flds = {'DRTAStar_LOG10','DRTGStar_LOG10', ...
-                'DRTNStar_LOG10','DRTQStar_LOG10','DRTHStar_LOG10'};    
-end
-
-f2 = figure;
-
-% -- arithmetic
-h1a = histfit(b1d2a,hnb,'lognormal');
-
-% patch
-h1a(1).EdgeColor = 'None';
-h1a(1).FaceColor = [0.7,0.0,0.0];
-h1a(1).FaceAlpha = 0.1;
-
-% line
-h1a(2).LineWidth = 2; 
-h1a(2).Color = [0.7,0.0,0.0];
-  
-hold on 
-
-% -- geometric
-h1g = histfit(b1d2g,hnb,'lognormal');
-
-% patch
-h1g(1).EdgeColor = 'None';
-h1g(1).FaceColor = [0.0,0.7,0.0];
-h1g(1).FaceAlpha = 0.1;
-
-% line
-h1g(2).LineWidth = 2; 
-h1g(2).Color = [0.0,0.7,0.0];
-
-% -- normalised
-h1n = histfit(b1d2n,hnb,'lognormal');
-
-% patch
-h1n(1).EdgeColor = 'None';
-h1n(1).FaceColor = [0.0,0.0,0.7];
-h1n(1).FaceAlpha = 0.1;
-
-% line
-h1n(2).LineWidth = 2; 
-h1n(2).Color = [0.0,0.0,0.7];
-
-% -- quadratic
-h1q = histfit(b1d2q,hnb,'lognormal');
-
-% patch
-h1q(1).EdgeColor = 'None';
-h1q(1).FaceColor = [0.7,0.7,0.7];
-h1q(1).FaceAlpha = 0.1;
-
-% line
-h1q(2).LineWidth = 2; 
-h1q(2).Color = [0.7,0.7,0.7];
-
-% -- harmonic
-h1h = histfit(b1d2h,hnb,'lognormal');
-
-% patch
-h1h(1).EdgeColor = 'None';
-h1h(1).FaceColor = [0.7,0.7,0.0];
-h1h(1).FaceAlpha = 0.1;
-
-% line
-h1h(2).LineWidth = 2; 
-h1h(2).Color = [0.8,0.8,0.0];
-
-% Customising legend entries 
-set(get(get(h1a(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-set(get(get(h1g(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-set(get(get(h1n(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-set(get(get(h1q(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-set(get(get(h1h(1),'Annotation'),'LegendInformation'),'IconDisplayStyle','off')
-
-leg = legend('$\mathcal{N}^{*}_A$','$\mathcal{N}^{*}_G$', ... 
-             '$\mathcal{N}^{*}_N$','$\mathcal{N}^{*}_Q$', ... 
-             '$\mathcal{N}^{*}_H$');
-leg.FontSize = FS;
-
-% labels 
-xlabel('$DRT^{*}$','FontSize',FS);
-ylabel('$n_{e}$','FontSize',FS);
-
-% axis limits
-switch log_base
-    case 'ln'
-        ylim([0,2.2e4]);
-    case 'log10'
-        ylim([0,3.0e4]);
-end
-
-%print('../histogram-drt*.eps','-depsc2');
-
-%% Plotting DRT* distribution over reservoir
-
-for f = 1:5
-    figure;
-    prop = P.(flds{f});     
-    prop = prop(:); prop = prop(active);    
-    plotCellData(G,prop,'EdgeColor','none','BackFaceLighting','lit');
-    axis off vis3d
-    colormap(jet)
-    cbar = colorbar;
-    cbar.FontSize = FS;
-    cbar.Box = 'off';      
-    aux = split(flds{f},'_'); 
-    cbar.Label.String = [aux(1),' ',aux(2)];
-    
-    fn = strcat('../tmp/3d-zoning-drt*-',num2str(f),'.eps');
-    %print(fn,'-depsc2');
-end      
-
-
 %% DRT connections
 
 switch log_base
@@ -404,3 +413,57 @@ switch log_base
         drtStH_log10 = findDRTConnections(drtlistH_log10, P, 'normalized','log10',nofs,'n', 1);
 
 end
+
+
+%% Computing graph metrics 
+
+opt.nofs = nofs;    
+opt.seps = 0.05;
+opt.R2min = 0.9;
+
+% compute
+switch log_base
+    
+    case 'ln'    
+        
+        [metricsStA_ln,linregrStA_ln] = computeDRTGraphMetrics(opt,drtStA_ln);
+        [metricsStG_ln,linregrStG_ln] = computeDRTGraphMetrics(opt,drtStG_ln);
+        [metricsStN_ln,linregrStN_ln] = computeDRTGraphMetrics(opt,drtStN_ln);
+        [metricsStQ_ln,linregrStQ_ln] = computeDRTGraphMetrics(opt,drtStQ_ln);
+        [metricsStH_ln,linregrStH_ln] = computeDRTGraphMetrics(opt,drtStH_ln);
+        
+        save('../tmp/metricsStA_ln.mat','metricsStA_ln');
+        save('../tmp/metricsStG_ln.mat','metricsStG_ln');
+        save('../tmp/metricsStN_ln.mat','metricsStN_ln');
+        save('../tmp/metricsStQ_ln.mat','metricsStQ_ln');
+        save('../tmp/metricsStH_ln.mat','metricsStH_ln');
+        
+        save('../tmp/linregrStA_ln.mat','linregrStA_ln');
+        save('../tmp/linregrStG_ln.mat','linregrStG_ln');
+        save('../tmp/linregrStN_ln.mat','linregrStN_ln');
+        save('../tmp/linregrStQ_ln.mat','linregrStQ_ln');
+        save('../tmp/linregrStH_ln.mat','linregrStH_ln');
+
+    case 'log10'
+        
+        [metricsStA_log10,linregrStA_log10] = computeDRTGraphMetrics(opt,drtStA_log10);
+        [metricsStG_log10,linregrStG_log10] = computeDRTGraphMetrics(opt,drtStG_log10);
+        [metricsStN_log10,linregrStN_log10] = computeDRTGraphMetrics(opt,drtStN_log10);
+        [metricsStQ_log10,linregrStQ_log10] = computeDRTGraphMetrics(opt,drtStQ_log10);
+        [metricsStH_log10,linregrStH_log10] = computeDRTGraphMetrics(opt,drtStH_log10);
+        
+        save('../tmp/metricsStA_ln.mat','metricsStA_ln');
+        save('../tmp/metricsStG_ln.mat','metricsStG_ln');
+        save('../tmp/metricsStN_ln.mat','metricsStN_ln');
+        save('../tmp/metricsStQ_ln.mat','metricsStQ_ln');
+        save('../tmp/metricsStH_ln.mat','metricsStH_ln');
+        
+        save('../tmp/linregrStA_log10.mat','linregrStA_log10');
+        save('../tmp/linregrStG_log10.mat','linregrStG_log10');
+        save('../tmp/linregrStN_log10.mat','linregrStN_log10');
+        save('../tmp/linregrStQ_log10.mat','linregrStQ_log10');
+        save('../tmp/linregrStH_log10.mat','linregrStH_log10');
+
+end
+
+fprintf('---> Execution finished for model ''%s''.\n',model);
