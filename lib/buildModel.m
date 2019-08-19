@@ -45,7 +45,17 @@ switch ext
 
 % IMEX
 case '.dat'
-    %TODO
+    % TODO 
+    % Problematic... 
+    % works only for Cartesian grids!!! 
+    % not optimized for STARS! 
+    GRID = readCMGDataset(f);
+    [I,J,K] = deal(GRID.NI,GRID.NJ,GRID.NK);
+    PROPS.PHI = cell2mat(GRID.POR)';
+    PROPS.KX = cell2mat(GRID.PERMI)';
+    PROPS.KY = cell2mat(GRID.PERMJ)';
+    PROPS.KZ = cell2mat(GRID.PERMK)';
+    G = cartGrid([I,J,K]);    
 
 % ECLIPSE
 case '.DATA'
