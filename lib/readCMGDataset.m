@@ -33,7 +33,12 @@ function GRID = readCMGDataset(fname)
 %       Ky = reshape(rock.perm(:,2),[I,J,K]); 
 %       Kz = reshape(rock.perm(:,3),[I,J,K]); 
 %
-%
+% Remark 2: if the .dat file has one or more *INCLUDE keyword, 
+%           the user should provide a new file endowed with
+%           the porosity and permeability tables. Otherwise, 
+%           they will not be procesed by this function. 
+%           This is a feature to be implementated.
+%          
 % Dr. Gustavo Oliveira
 
 %%
@@ -53,14 +58,20 @@ while ~feof(fid)
     
     % for first call
     if true(flag), tline = fgetl(fid); end    
-        
+    
+    if strcmp(regexp(tline,'^\*INCLUDE|','match'),'*INCLUDE')   
+        warning('*INCLUDE keyword detected. The output ''GRID'' variable might have missing values.');        
+        disp(tline)
+    end
+    
     if strcmp(regexp(tline,'^GRID|','match'),'GRID')    
         sl = regexp(tline,'\s+','split');
         GRID.FORMAT = sl{2};
         GRID.NI = str2double(sl{3});
         GRID.NJ = str2double(sl{4});
         GRID.NK = str2double(sl{5});
-        GRID.NCELLS = GRID.NI*GRID.NJ*GRID.NK;                        
+        GRID.NCELLS = GRID.NI*GRID.NJ*GRID.NK;     
+                        
     end            
 
 

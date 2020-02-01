@@ -29,7 +29,30 @@ function [G,PROPS] = buildModel(f)
 
 %}
 
-[~,~,ext] = fileparts(f);
+% checkings
+[fid, msg] = fopen(f, 'rt');
+if fid < 0
+    error([f, ': ', msg])                
+else                
+    lin = fgetl(fid);
+    if lin == -1
+        msg = ferror(fid, 'clear');
+        fclose(fid);
+        error('Grid:buildModel:emptyFile', ...
+               'File ''%s'' is empty.\n', ...
+               'System reports: %s\n',f, msg);                    
+    else
+        [~,~,ext] = fileparts(f);
+        if strcmpi(ext,'.DAT') 
+            ext = '.dat'; % default 
+        elseif strcmpi(ext,'.DATA')
+            ext = '.data'; % default
+        else
+            error('Grid:buildModel:gridFormat',... 
+                  'File format ''%s'' unsupported.',ext)
+        end
+    end
+end                       
 
 % properties
 PROPS.PHI = [];        
@@ -58,7 +81,7 @@ case '.dat'
     G = cartGrid([I,J,K]);    
 
 % ECLIPSE
-case '.DATA'
+case '.data'
 
     % read and process grid with MRST
     [G,~] = readGRDECL(f);

@@ -6,22 +6,12 @@ classdef DirManager
  % do not require class objects as arguments
  
  methods (Static)
-     
+                         
      function mountDir
          %MOUNTDIR mount standard directory tree
-         
-         % gets working dir 
-         aux = split(pwd,filesep);
-         
-         % check relative path of working dir to 'wellps' top 
-         where = find(strcmp(aux,'wellps'));         
-         level = numel(aux) - where;         
-         if level == 0
-             root = '.'; % this is root
-         else
-             root = repmat('../',1,level); % this is not
-         end
-                                           
+                  
+         root = './';
+                                                    
          % standard dirs
          %      - csv: csv files 
          %      - tmp: temporary files
@@ -40,7 +30,7 @@ classdef DirManager
          end
          
      end
-     
+               
      function tmpDir = createTempDataDir(mfilename)
         %CREATETEMPDATADIR create a temporary directory to store 
         % data output by the case in execution
@@ -60,7 +50,34 @@ classdef DirManager
         end
         
      end
+   
      
+     %% ---- GET methods 
+     
+     function d = getRootDir
+         d = getenv('WELLPS_ROOTDIR');
+     end
+     
+     function d = getCsvDir
+         d = getenv('CSV_DIR');
+     end
+     
+     function d = getMatDir
+         d = getenv('MAT_DIR');
+     end
+     
+     function d = getLogDir
+         d = getenv('LOG_DIR');
+     end
+     
+     function d = getTmpDir
+         d = getenv('TMP_DIR');
+     end
+     
+     function d = getBenchMarksDir
+         d = getenv('BENCHMARKS_DIR');
+     end
+               
  end
 
 end
