@@ -1,8 +1,11 @@
 %% CASE STUDY: comparison of DRT-clustering generated from FZI and FZI*
 % DRT/DRT* computed from FZI/FZI* over UNISIM 1D
 
+%% class instanciation
+d = DirManager();
+
 %% Load grid 
-[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D.DATA');
+[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
 
 % compute geometry
 Gc = computeGeometry(G);
@@ -12,7 +15,7 @@ Gc = computeGeometry(G);
 P = computeParams(G,PROPS);
 
 % field statistics for chosen properties
-SN = printStats(P,{'DRTN_LN','DRTN_LOG10','DRTNStar_LN','DRTNStar_LOG10'},'n');
+SN = getStats(d,P,{'DRTN_LN','DRTN_LOG10','DRTNStar_LN','DRTNStar_LOG10'},'n');
 
 %% DRT list w/out zero
 

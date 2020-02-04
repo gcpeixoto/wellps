@@ -25,7 +25,7 @@ model = 'unisim1'; % 'unisim1'
 seps = 1e-1;
 
 % clustering method 
-method = setSCCMethod('nl'); % --> READ REMARK <--
+method = setSCCMethod('6n'); % --> READ REMARK <--
 
 %% Grid reading
 
@@ -74,13 +74,13 @@ switch method
         tstart = tic;
         [partitioning,R2,M,B] = slopeConstrainedClusteringPY(Log10PHIZ,Log10RQIN,1,seps);
         telapsed = toc(tstart); 
-        fname = strcat('./data/SCCPY',model,'.mat');                       
+        fname = strcat('./data/SCCPY_',model,'.mat');                       
     
     case 'nl'
         tstart = tic;
         [partitioning,R2,M,B] = slopeConstrainedClusteringNL(Log10PHIZ,Log10RQIN,1,seps);
         telapsed = toc(tstart); 
-        fname = strcat('./data/SCCNL',model,'.mat');                       
+        fname = strcat('./data/SCCNL_',model,'.mat');                       
     
     case '6n'
         tstart = tic;

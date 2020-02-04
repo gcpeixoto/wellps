@@ -75,5 +75,5 @@ DRTNStar_LN = r(FZINStar); DRTNStar_LN(isinf(DRTNStar_LN)) = 0; % normalized
 % P = computeParams(G,PROPS);
 % 
 % field statistics for chosen properties
-% SN = printStats(P,{'DRTN_LN','DRTNStar_LN'},'n');
+% SN = getStats(d,P,{'DRTN_LN','DRTNStar_LN'},'n');
 

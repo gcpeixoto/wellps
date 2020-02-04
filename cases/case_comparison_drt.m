@@ -43,17 +43,17 @@ end
 P = computeParams(G,PROPS);
 
 % field statistics: triplets (DRT,perm,log_base)
-SA = printStats(P,{'DRTA_LN','DRTA_LOG10'},'n');
-SG = printStats(P,{'DRTG_LN','DRTG_LOG10'},'n');
-SN = printStats(P,{'DRTN_LN','DRTN_LOG10'},'n');
-SQ = printStats(P,{'DRTQ_LN','DRTQ_LOG10'},'n');
-SH = printStats(P,{'DRTH_LN','DRTH_LOG10'},'n');
+SA = getStats(d,P,{'DRTA_LN','DRTA_LOG10'},'n');
+SG = getStats(d,P,{'DRTG_LN','DRTG_LOG10'},'n');
+SN = getStats(d,P,{'DRTN_LN','DRTN_LOG10'},'n');
+SQ = getStats(d,P,{'DRTQ_LN','DRTQ_LOG10'},'n');
+SH = getStats(d,P,{'DRTH_LN','DRTH_LOG10'},'n');
 
-SAStar = printStats(P,{'DRTAStar_LN','DRTAStar_LOG10'},'n');
-SGStar = printStats(P,{'DRTGStar_LN','DRTGStar_LOG10'},'n');
-SNStar = printStats(P,{'DRTNStar_LN','DRTNStar_LOG10'},'n');
-SQStar = printStats(P,{'DRTQStar_LN','DRTQStar_LOG10'},'n');
-SHStar = printStats(P,{'DRTHStar_LN','DRTHStar_LOG10'},'n');
+SAStar = getStats(d,P,{'DRTAStar_LN','DRTAStar_LOG10'},'n');
+SGStar = getStats(d,P,{'DRTGStar_LN','DRTGStar_LOG10'},'n');
+SNStar = getStats(d,P,{'DRTNStar_LN','DRTNStar_LOG10'},'n');
+SQStar = getStats(d,P,{'DRTQStar_LN','DRTQStar_LOG10'},'n');
+SHStar = getStats(d,P,{'DRTHStar_LN','DRTHStar_LOG10'},'n');
 
 
 %% DRT/DRT* list w/out zero

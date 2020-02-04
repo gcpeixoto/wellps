@@ -1,4 +1,4 @@
-function [SCCC,SCCT,SCCPY,SCCNL,SCC6N] = loadClusterSCC
+function [SCCC,SCCT,SCCPY,SCCNL] = loadClusterSCC
 %LOADCLUSTERSCC load data structures yielded by call of
 %slopeConstrainedClustering, if they are already computed.
 
@@ -38,15 +38,16 @@ else
     error('wellps:loadClusterSCC','Did you run "nl" clustering?');
 end
 
+%{
 % 6N
 if exist('../mat/SCC6N.mat','file') == 2
     load('../mat/SCC6N.mat');
     SCC6N = SCC;
     clear SCC
 else
-    error('wellps:loadClusterSCC','Did you run "nl" clustering?');
+    error('wellps:loadClusterSCC','Did you run "6n" clustering?');
 end
-
+%}
 
 end
 

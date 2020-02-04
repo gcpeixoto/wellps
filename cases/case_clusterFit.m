@@ -43,9 +43,6 @@ model = 'spe10';
 % class instantiations 
 d = DirManager(); 
 
-% mounts standard directory tree
-d.mountDir();   
-
 %% Load grid 
 switch model 
     case 'unisim1'
@@ -107,7 +104,7 @@ end
 bas = char(bas);
 
 % field statistics for chosen properties
-S = printStats(P,{bas},'n');
+S = getStats(d,P,{bas},'n');
 
 %% DRT choice 
 

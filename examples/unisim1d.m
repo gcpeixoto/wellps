@@ -4,14 +4,13 @@ mrstVerbose off  % turn on verbose
 
 %% Mounting 
 
-% class instantiations 
+% class instantiation 
 d = DirManager(); 
 
-% mounts standard directory tree
-d.mountDir();   
-
 %% Grid reading
-[G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
+f = fullfile(d.getBenchMarksDir,'unisim-I-D','eclipse','UNISIM_I_D_ECLIPSE.DATA');
+
+[G,PROPS] = buildModel(f);
 
 %% Plot properties 
 % 'buildModel' delivers a processed grid structure G.
@@ -40,11 +39,11 @@ ncells = prod(G.cartDims) == numel(PROPS.ACTNUM); % returns 'true'
 P = computeParams(G,PROPS);
 
 %% Statistics for field variables
-% printStats is useful to show a short summary of frequencies and values 
+% getStats is useful to show a short summary of frequencies and values 
 % of the variables computed in P
 
 % field statistics for chosen properties
-S = printStats(P,{'DRTN_LN','DRTN_LOG10'},'n');
+S = getStats(d,P,{'DRTN_LN','DRTN_LOG10'},'n');
 
 %% Find DRT connections
 % Compute DRT connections based on list chosen from observation of

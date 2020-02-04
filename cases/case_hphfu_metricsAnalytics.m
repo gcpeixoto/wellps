@@ -40,8 +40,8 @@ end
 P = computeParams(G,PROPS);
 
 % field statistics for chosen properties
-S = printStats(P,{'DRTN_LN'},'y');
-S2 = printStats(P,{'DRTN2_LN'},'y');
+S = getStats(P,{'DRTN_LN'},'y');
+S2 = getStats(P,{'DRTN2_LN'},'y');
 
 %% DRT choice 
 

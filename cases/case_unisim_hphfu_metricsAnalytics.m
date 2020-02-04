@@ -6,9 +6,6 @@
 % class instantiations 
 d = DirManager(); 
 
-% mounts standard directory tree
-d.mountDir();   
-
 %% Grid reading
 [G,PROPS] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');
 
@@ -16,7 +13,7 @@ d.mountDir();
 P = computeParams(G,PROPS);
 
 % field statistics for chosen properties
-S = printStats(P,{'DRTN_LN'},'n');
+S = getStats(d,P,{'DRTN_LN'},'n');
 
 %% DRT choice 
 

@@ -1,5 +1,5 @@
-function S = printStats(P,pnames,save)
-%PRINTSTATS Print statistics of field property to file
+function S = getStats(dobj,P,pnames,save)
+%PRINTSTATS Get statistics of field property and, optionally, print to file
 %   
 % PARAMETERS:
 %       P       - structure whose fields are the property values of the reservoir.  
@@ -51,12 +51,12 @@ S = cell(1,numel(pnames)); % stats table
 
 % printing data table to .csv file
 for n = 1:np
-    p = getfield(P,pnames{n});    
+    p = P.(pnames{n});    
     T = tabulate(p(:));    
     S{n} = T;   
     
-    if to_file == true
-        aux = strcat('../csv/Statistics-Property-',pnames{n},'.csv');
+    if to_file == true       
+        aux = fullfile(dobj.getCsvDir,strcat('stats-',pnames{n},'.csv'));
         dlmwrite(aux,hdr,'');            
         dlmwrite(aux,T,'delimiter',',','-append'); 
         fprintf('----> File %s was saved.\n',aux);
