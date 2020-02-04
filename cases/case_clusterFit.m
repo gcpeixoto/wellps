@@ -124,7 +124,7 @@ end
 nofs = nofs_in;
 
 % compute HFUs by DRT
-drtSt = findDRTConnections(drtlist, P, ave, log_base, nofs, 'n', 1);
+drtSt = findDRTConnections(d,drtlist, P, ave, log_base, nofs, 'n', 1);
 
 if isempty(drtSt)
     fprintf('----> No components for this DRT.\n'); 

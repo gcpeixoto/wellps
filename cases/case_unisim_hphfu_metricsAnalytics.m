@@ -24,7 +24,7 @@ drtlist = S{1}(2:end,1);
 nofs = 30;
 
 % compute HFUs by DRT
-drtSt = findDRTConnections(drtlist, P, 'normalized','ln',nofs,'y', 1);
+drtSt = findDRTConnections(d,drtlist, P, 'normalized','ln',nofs,'y', 1);
 
 %% Computing graph metrics 
 % Here, we choose parameters to compute the graph metrics over all

@@ -34,8 +34,8 @@ active = find(~isnan(Ind));
 % number of significant cells (only to save info)
 nofs = 50;
 
-drt_ln = findDRTConnections(drt_ln, P, 'normalized','ln',nofs,'y', 1);
-drtStar_ln = findDRTConnectionsByFZIStar(drtStar_ln, P, 'normalized','ln',nofs,'y', 1);
+drt_ln = findDRTConnections(d,drt_ln, P, 'normalized','ln',nofs,'y', 1);
+drtStar_ln = findDRTConnectionsByFZIStar(d,drtStar_ln, P, 'normalized','ln',nofs,'y', 1);
 
 
 %% metrics

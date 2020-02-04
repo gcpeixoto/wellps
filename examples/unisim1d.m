@@ -56,7 +56,7 @@ S = getStats(d,P,{'DRTN_LN','DRTN_LOG10'},'n');
 nofs = 30;
 
 drtlist = S{1}(5:6,1);
-drtSt = findDRTConnections(drtlist, P, 'geometric','ln',nofs,'y', 1);
+drtSt = findDRTConnections(d,drtlist, P, 'geometric','ln',nofs,'y', 1);
 
 %% Plot clusters from DRT-connected cells
 % To plot DRT-connected clusters, we need to take two steps: i) to use the

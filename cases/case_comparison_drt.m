@@ -9,6 +9,9 @@
 
 warning('THIS CASE IS EXTREMELY COSTLY!!!');
 
+
+d = DirManager;
+
 %% Default
 set(groot,'defaulttextinterpreter','latex');  
 set(groot, 'defaultAxesTickLabelInterpreter','latex');  
@@ -398,19 +401,19 @@ switch log_base
     
     case 'ln'    
 
-        drtStA_ln = findDRTConnections(drtlistA_ln, P, 'arithmetic','ln',nofs,'n', 1);
-        drtStG_ln = findDRTConnections(drtlistG_ln, P, 'geometric','ln',nofs,'n', 1);
-        drtStN_ln = findDRTConnections(drtlistN_ln, P, 'normalized','ln',nofs,'n', 1);
-        drtStQ_ln = findDRTConnections(drtlistQ_ln, P, 'quadratic','ln',nofs,'n', 1);
-        drtStH_ln = findDRTConnections(drtlistH_ln, P, 'harmonic','ln',nofs,'n', 1);
+        drtStA_ln = findDRTConnections(d,drtlistA_ln, P, 'arithmetic','ln',nofs,'n', 1);
+        drtStG_ln = findDRTConnections(d,drtlistG_ln, P, 'geometric','ln',nofs,'n', 1);
+        drtStN_ln = findDRTConnections(d,drtlistN_ln, P, 'normalized','ln',nofs,'n', 1);
+        drtStQ_ln = findDRTConnections(d,drtlistQ_ln, P, 'quadratic','ln',nofs,'n', 1);
+        drtStH_ln = findDRTConnections(d,drtlistH_ln, P, 'harmonic','ln',nofs,'n', 1);
 
     case 'log10'
 
-        drtStA_log10 = findDRTConnections(drtlistA_log10, P, 'arithmetic','log10',nofs,'n', 1);
-        drtStG_log10 = findDRTConnections(drtlistG_log10, P, 'geometric','log10',nofs,'n', 1);
-        drtStN_log10 = findDRTConnections(drtlistN_log10, P, 'normalized','log10',nofs,'n', 1);
-        drtStQ_log10 = findDRTConnections(drtlistQ_log10, P, 'normalized','log10',nofs,'n', 1);
-        drtStH_log10 = findDRTConnections(drtlistH_log10, P, 'normalized','log10',nofs,'n', 1);
+        drtStA_log10 = findDRTConnections(d,drtlistA_log10, P, 'arithmetic','log10',nofs,'n', 1);
+        drtStG_log10 = findDRTConnections(d,drtlistG_log10, P, 'geometric','log10',nofs,'n', 1);
+        drtStN_log10 = findDRTConnections(d,drtlistN_log10, P, 'normalized','log10',nofs,'n', 1);
+        drtStQ_log10 = findDRTConnections(d,drtlistQ_log10, P, 'normalized','log10',nofs,'n', 1);
+        drtStH_log10 = findDRTConnections(d,drtlistH_log10, P, 'normalized','log10',nofs,'n', 1);
 
 end
 

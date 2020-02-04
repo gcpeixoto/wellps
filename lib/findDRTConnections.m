@@ -1,10 +1,12 @@
-function C = findDRTConnections(drt, P, ave, base, nofsc, tocsv, dv)
+function C = findDRTConnections(dobj, drt, P, ave, base, nofsc, tocsv, dv)
 %FINDDRTCONNECTIONS searches for all the connected components 
 %                   of cells with same DRT value
 %
 %
 % PARAMETERS:
 %   
+%       dobj    - DirManager class object.
+%     
 %       drt     - array listing the wanted DRT values
 %
 %       P       - structure of properties ('PHI','KX',etc.)
@@ -254,9 +256,10 @@ switch tocsv
 end
 
 tstart = tic; % timing
+fprintf('Sweeping field...\n')
 for val = drt(1):drt(end)
     
-    fprintf('----> Sweeping field: DRT = %d... \n',val);
+    fprintf('=> DRT = %d \n',val);
     
     % filtering grid to capture voxels with a specific DRT
     [ ~, coordsDRT, indz ] = maskVoxels(DRT,val); 
@@ -296,14 +299,14 @@ for val = drt(1):drt(end)
     end   
     
     if isempty(indIJ)
-        fprintf('----> No connections found for DRT = %d... \n',val);
+        fprintf('==> No connections found for DRT = %d... \n',val);
         continue;
     end
     
     aux = [ indIJ(:,2) indIJ(:,1) ]; % reverse edges [ j i ]
     indIJ = [ indIJ; aux ]; % filling        
     
-    disp('----> Computing adjacency matrix...');            
+    %disp('----> Computing adjacency matrix...');            
     % creates adjacency matrix n x n by marking 1 for connected nodes
     MDadj = sparse( indIJ(:,1),indIJ(:,2),1,size(coordsDRT,1),size(coordsDRT,1) ); 
             
@@ -346,7 +349,8 @@ for val = drt(1):drt(end)
                   |    |- comp{ ... }{idcompK}  } [ SEVERAL DATA ]
                                                                   
     %}      
-    disp('----> Finding connected components...');
+    
+    %disp('----> Finding connected clusters...');
     [ncomp,compSizes,members] = networkComponents(MDadj);
             
     % global  
@@ -387,20 +391,19 @@ for val = drt(1):drt(end)
     if tocsv == true
         
         % preparing csv file
-        fname = strcat('../csv/Table-Field_DRT_',ave,'_',base,'_',num2str( val ),'.csv');    
+        fname = strcat(dobj.getCsvDir,'/table-field_DRT_',ave,'_',base,'_',num2str( val ),'.csv');    
         dlmwrite(fname,hdr,'');        
     
         % append matrix
         dlmwrite(fname,mat,'-append');
-        fprintf('----> Table-Field_DRT_%s.csv file saved. \n',...
-                num2str(val));        
+        %fprintf('----> File %s saved. \n',fname);        
     end
     
+    fprintf('==> Computing %d clusters...',ncomp);
     % cluster (each component)
+    cnofs = 0; 
     for idcomp = 1:ncomp
-        
-        fprintf('--------> Computing component = %d \n',idcomp);
-        
+                
         aux = coordsDRT( members{idcomp},: );
         drtSt.compVoxelCoords{idcomp} = aux; 
         drtSt.compVoxelInds{idcomp} = indz( members{idcomp} );          
@@ -434,19 +437,21 @@ for val = drt(1):drt(end)
         
         if (tocsv == true) && (compSizes(idcomp) >= nofsc)              
             % preparing csv file
-            fname = strcat('../csv/Table-Cluster_',num2str(idcomp),'_DRT_',ave,'_',base,'_',num2str( val ),'.csv');        
+            fname = strcat(dobj.getCsvDir,'/table-cluster_',num2str(idcomp),'_DRT_',ave,'_',base,'_',num2str( val ),'.csv');        
             dlmwrite(fname,hdr,'');       
             
             % append matrix 
-            dlmwrite(fname,mat,'-append'); 
-            fprintf('----> Table-Cluster_%s_DRT_%s.csv file saved. \n',...
-                num2str(idcomp),num2str(val));            
+            dlmwrite(fname,mat,'-append');             
+            
+            % count clusters with >= nofsc
+            cnofs = cnofs + 1;
         end                        
     end              
-
+    fprintf(' %d clusters with >= %d cells.\n',cnofs,nofsc);            
+    
     % saving structure to .mat     
-    save( strcat('../mat/DRT_',ave,'_',base,'_',num2str( val ),'.mat'),'drtSt'); % saving
-    fprintf('----> DRT_%s.mat file saved. \n',num2str(val));
+    save( strcat(dobj.getMatDir,'/DRT_',ave,'_',base,'_',num2str( val ),'.mat'),'drtSt'); % saving
+    %fprintf('----> DRT_%s.mat file saved. \n',num2str(val));
     
     % dynamic attribution     
     f = strcat('DRT',num2str(val));
@@ -457,4 +462,4 @@ for val = drt(1):drt(end)
 end
 
 tfinal = toc(tstart);
-fprintf('----> findDRTConnections finished after %g seconds. \n',tfinal);
+fprintf('findDRTConnections finished after %g seconds. \n',tfinal);
