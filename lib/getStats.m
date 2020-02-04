@@ -2,6 +2,7 @@ function S = getStats(dobj,P,pnames,save)
 %PRINTSTATS Get statistics of field property and, optionally, print to file
 %   
 % PARAMETERS:
+%       dobj    - DirManager class object.
 %       P       - structure whose fields are the property values of the reservoir.  
 %
 %       pnames  - property names for which to print data.
