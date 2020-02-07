@@ -77,6 +77,10 @@ classdef DirManager
      function d = getBenchMarksDir
          d = getenv('BENCHMARKS_DIR');
      end
+     
+     function d = getCppDir
+         d = getenv('CPP_DIR');
+     end
                
  end
 

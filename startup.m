@@ -12,7 +12,8 @@ dirs = {'CSV_DIR',...
         'MAT_DIR',...
         'LOG_DIR',...
         'TMP_DIR',...
-        'BENCHMARKS_DIR'};
+        'BENCHMARKS_DIR',...
+        'CPP_DIR'};
 
 for d = dirs
     ext = split(d{1},'_'); 
@@ -23,3 +24,6 @@ end
 % create standard directories
 d = DirManager; 
 d.mountDir;
+
+% clean
+clearvars;

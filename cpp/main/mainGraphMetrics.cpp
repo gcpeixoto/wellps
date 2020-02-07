@@ -1,32 +1,46 @@
 #include "Snap.h"
 
-/* This file is based on centrality.cpp from SNAP example */
+/* This file is based on centrality.cpp from SNAP example and is slightly
+   modified only to pass the following arguments.
+
+  - argv[1] passes the input edge file (default: TMP_DIR/edges.txt),
+
+  - argv[2] passes the output metrics file (default: TMP_DIR/metrics.txt),
+
+            Above,TMP_DIR is the WELLPS's temporary directory.
+ */
 
 int main(int argc, char* argv[]) {
-  
+
   Env = TEnv(argc, argv, TNotify::StdNotify);
   Env.PrepArgs(TStr::Fmt("Node Centrality. build: %s, %s. Time: %s", __TIME__, __DATE__, TExeTm::GetCurTm()));
   TExeTm ExeTm;
   Try
-  const TStr InFNm = Env.GetIfArgPrefixStr("-i:", "../tmp/edges.txt", "Input un/directed graph");
-  const TStr OutFNm = Env.GetIfArgPrefixStr("-o:", "../tmp/metrics.txt", "Output file");
-  printf("Loading %s...", InFNm.CStr());
+  const TStr InFNm = Env.GetIfArgPrefixStr("-i:", argv[1], "Input un/directed graph");
+  const TStr OutFNm = Env.GetIfArgPrefixStr("-o:", argv[2], "Output file");
+  //printf("Loading %s...", InFNm.CStr());
   PNGraph Graph = TSnap::LoadEdgeList<PNGraph>(InFNm);
   //PNGraph Graph = TSnap::GenRndGnm<PNGraph>(10, 10);
   //TGraphViz::Plot(Graph, gvlNeato, InFNm+".gif", InFNm, true);
-  printf("nodes:%d  edges:%d\n", Graph->GetNodes(), Graph->GetEdges());
+  //printf("nodes:%d  edges:%d\n", Graph->GetNodes(), Graph->GetEdges());
   PUNGraph UGraph = TSnap::ConvertGraph<PUNGraph>(Graph); // undirected version of the graph
   TIntFltH BtwH, EigH, PRankH, CcfH, CloseH, HubH, AuthH;
   //printf("Computing...\n");
-  printf("Treat graph as DIRECTED: ");
-  printf(" PageRank... ");             TSnap::GetPageRank(Graph, PRankH, 0.85);
-  printf(" Hubs&Authorities...");      TSnap::GetHits(Graph, HubH, AuthH);
-  printf("\nTreat graph as UNDIRECTED: ");
-  printf(" Eigenvector...");           TSnap::GetEigenVectorCentr(UGraph, EigH);
-  printf(" Clustering...");            TSnap::GetNodeClustCf(UGraph, CcfH);
-  printf(" Betweenness (SLOW!)...");   TSnap::GetBetweennessCentr(UGraph, BtwH, 1.0);
-  printf(" Constraint (SLOW!)...");    TNetConstraint<PUNGraph> NetC(UGraph, true);
-  printf(" Closeness (SLOW!)...");
+  //printf("Treat graph as DIRECTED: ");
+  //printf(" PageRank... ");
+  TSnap::GetPageRank(Graph, PRankH, 0.85);
+  //printf(" Hubs&Authorities...");
+  TSnap::GetHits(Graph, HubH, AuthH);
+  /*printf("\nTreat graph as UNDIRECTED: ");*/
+  //printf(" Eigenvector...");
+  TSnap::GetEigenVectorCentr(UGraph, EigH);
+  //printf(" Clustering...");
+  TSnap::GetNodeClustCf(UGraph, CcfH);
+  //printf(" Betweenness (SLOW!)...");
+  TSnap::GetBetweennessCentr(UGraph, BtwH, 1.0);
+  //printf(" Constraint (SLOW!)...");
+  TNetConstraint<PUNGraph> NetC(UGraph, true);
+  //printf(" Closeness (SLOW!)...");
   for (TUNGraph::TNodeI NI = UGraph->BegNI(); NI < UGraph->EndNI(); NI++) {
     const int NId = NI.GetId();
     CloseH.AddDat(NId, TSnap::GetClosenessCentr(UGraph, NId));
@@ -47,7 +61,7 @@ int main(int argc, char* argv[]) {
     const double PgrCentr = PRankH.GetDat(NId);
     const double HubCentr = HubH.GetDat(NId);
     const double AuthCentr = AuthH.GetDat(NId);
-    fprintf(F, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", NId, 
+    fprintf(F, "%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\n", NId,
       DegCentr, CloCentr, BtwCentr, EigCentr, Constraint, ClustCf, PgrCentr, HubCentr, AuthCentr);
   }
   fclose(F);

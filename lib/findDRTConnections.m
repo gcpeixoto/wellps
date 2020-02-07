@@ -32,8 +32,8 @@ function C = findDRTConnections(dobj, drt, P, ave, base, nofsc, tocsv, dv)
 % RETURNS:
 %
 %       C       - structure containing structures of data related to each DRT.
-%
-%               - .mat files saved into /mat.
+%                 This 'struct' object is saved into a .mat file for posterior
+%                 processing.
 
 if ~isnumeric(drt)
     error('wellps:findDRTConnections','drt must be an array containing DRT values to be gone through.');    

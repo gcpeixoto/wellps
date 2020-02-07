@@ -53,10 +53,11 @@ S = getStats(d,P,{'DRTN_LN','DRTN_LOG10'},'n');
 % .csv files.
 
 % number of significant cells
-nofs = 30;
+nofsc = 30;
 
 drtlist = S{1}(5:6,1);
-drtSt = findDRTConnections(d,drtlist, P, 'geometric','ln',nofs,'y', 1);
+%drtlist = S{1}(4,1);
+drtSt = findDRTConnections(d,drtlist, P, 'geometric','ln',nofsc,'n', 1);
 
 %% Plot clusters from DRT-connected cells
 % To plot DRT-connected clusters, we need to take two steps: i) to use the
@@ -73,6 +74,7 @@ drtSt = findDRTConnections(d,drtlist, P, 'geometric','ln',nofs,'y', 1);
 Ind = nan(prod(G.cartDims),1);
 Ind(G.cells.indexMap) = 1:G.cells.num;
 
+
 % plots the full UNISIM in dimmed grey 
 figure
 plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
@@ -86,13 +88,14 @@ plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{8}),...
     'FaceColor','r','EdgeColor','k')
 axis off vis3d
 
+
 %% Computing graph metrics 
 % Here, we choose parameters to compute the graph metrics over all
 % the clusters previously computed with findDRTConnections 
 
-% number of significant cells to be considered. Clusters with less 'nofs'
+% number of significant cells to be considered. Clusters with less 'nofsc'
 % cells are ignored
-opt.nofs = nofs;    
+opt.nofsc = nofsc;    
 % linear regression slope +/- tolerance.
 opt.seps = 0.05;
 % minimum R2 coefficient tolerance.
