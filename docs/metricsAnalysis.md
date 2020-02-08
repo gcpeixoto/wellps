@@ -1,8 +1,8 @@
-## `lib/metricsAnalyzer`
+## `lib/metricsAnalysis`
 
 **Gustavo Oliveira, @LaMEP/UFPB, gustavo.oliveira@ci.ufpb.br** 
 
-Documentation to understand the fields belonging to the `.csv` files generated from the function `lib/metricsAnalyzer`.
+Documentation to understand the fields belonging to the `.csv` files generated from the function `lib/metricsAnalysis`.
 
 ### A brief comment on hierarchy
 

@@ -2,6 +2,8 @@
 
 mrstVerbose off  % turn on verbose
 
+case_name = 'ex0'; % name for this case study
+
 %% Mounting 
 
 % class instantiation 
@@ -55,9 +57,12 @@ S = getStats(d,P,{'DRTN_LN','DRTN_LOG10'},'n');
 % number of significant cells
 nofsc = 30;
 
-drtlist = S{1}(5:6,1);
-%drtlist = S{1}(4,1);
-drtSt = findDRTConnections(d,drtlist, P, 'geometric','ln',nofsc,'n', 1);
+%drtlist = S{1}(5:6,1);
+drtlist = S{1}(4,1);
+
+average = 'geometric'; 
+logbase = 'ln';
+drtSt = findDRTConnections(d,drtlist, P, average, logbase, nofsc,'n', 1);
 
 %% Plot clusters from DRT-connected cells
 % To plot DRT-connected clusters, we need to take two steps: i) to use the
@@ -74,7 +79,7 @@ drtSt = findDRTConnections(d,drtlist, P, 'geometric','ln',nofsc,'n', 1);
 Ind = nan(prod(G.cartDims),1);
 Ind(G.cells.indexMap) = 1:G.cells.num;
 
-
+%{
 % plots the full UNISIM in dimmed grey 
 figure
 plotGrid(G, 1:G.cells.num,'FaceColor',[0.6,0.6,0.6], ...
@@ -87,7 +92,7 @@ plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{5}),...
 plotGrid(G, Ind(drtSt.DRT13.compVoxelInds{8}),...
     'FaceColor','r','EdgeColor','k')
 axis off vis3d
-
+%}
 
 %% Computing graph metrics 
 % Here, we choose parameters to compute the graph metrics over all
@@ -105,11 +110,22 @@ opt.R2min = 0.9;
 [metricsSt,linregrSt] = computeDRTGraphMetrics(opt,drtSt);
 
 
-%% Metrics analytics 
+%% Metrics analysis 
 % This method will export lots of .csv files ready to be handled in terms
 % of data analytics relating to graph centrality metrics computed for each 
-% cluster.  
-metricsAnalyzer([13,14],[1,2],'geometric','ln');
+% cluster. 
+
+analytics.loaddir = d.getMatDir;
+analytics.drtlist = drtlist;
+analytics.complist = [1,2];
+analytics.krule = average; % use the same as that for findDRTConnections! 
+analytics.logbase = logbase; % use the same as that for findDRTConnections!
+analytics.savedir = fullfile(d.getCsvDir,case_name);
+analytics.fileperf = true;
+analytics.fileminmax = true;
+analytics.filemetrics = true;
+
+dataDir = metricsAnalysis(analytics);
 
 %% Process cluster fit 
 % This method will compute the fit parameters for given DRT,
