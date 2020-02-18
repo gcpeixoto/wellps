@@ -1,24 +1,32 @@
 %% EXAMPLE: Ellipsoid fit 
 
-% Cases simulated for paper 
-% - Modelo UNISIM 1
-%   (DRT = 13, K = harmonic, log_base = LN, cluster = 2) 
-%   (DRT = 13, K = harmonic, log_base = LN, cluster = 4) 
-%   (DRT = 13, K = harmonic, log_base = LN, cluster = 5) 
-%
-% - Modelo SPE 10/2 
-%   (DRT = 5, K = geometric, log_base = LN, cluster = 95)
-%   (DRT = 6, K = geometric, log_base = LN, cluster = 5) 
-%   (DRT = 14, K = geometric, log_base = LN, cluster = 23)
-
 %% Load grids
 
-% unisim
-[GU,~] = buildModel('../benchmarks/unisim-I-D/eclipse/UNISIM_I_D_ECLIPSE.DATA');                
-GU = computeGeometry(GU);
-     
-% spe10
-[GSPE,~] = buildModelSPE10('original');        
+mrstVerbose off  % turn on verbose
+
+%% Mounting 
+
+% class instantiation 
+d = DirManager(); 
+
+%% Grid reading
+f = fullfile(d.getBenchMarksDir,'unisim-I-D','eclipse','UNISIM_I_D_ECLIPSE.DATA');
+
+[G,~] = buildModel(f);
+G = computeGeometry(G);
+
+%% Load sample cluster files 
+
+sdir = fullfile(d.getRootDir,'examples','sample');
+
+% Here, we load the sample .mat files 
+load(fullfile(sdir,'C.mat'),'drtSt');
+load(fullfile(sdir,'CLinRegr.mat'),'L');
+load(fullfile(sdir,'CMetrics.mat'),'M');
+
+
+%{
+
 
 %% Tests
 
@@ -84,3 +92,6 @@ switch simulated
             plotEllipsoidFit(GSPE,drtSt,clusterFitSt,drt,comp,pattern,factor,nres);
         
 end
+
+
+%}

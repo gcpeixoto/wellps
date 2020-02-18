@@ -1,4 +1,5 @@
-%% EXAMPLE 1: READ GRIDS
+%% EXAMPLE 1: READ BENCHMARK GRIDS
+%  Read and plot data from benchmark grids
 
 %% Settings 
 

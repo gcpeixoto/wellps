@@ -1,4 +1,5 @@
-%% TUTORIAL: main script that demonstrates the WELLPS walkthrough
+%% EXAMPLE 0: WELLPS WALKTHROUGH
+%  Main script that demonstrates the WELLPS purposes
 
 mrstVerbose off  % turn on verbose
 
