@@ -434,14 +434,16 @@ for val = drt(1):drt(end)
             LOGPHIZ( indz( members{idcomp} ) )   ...
             LOGRQI( indz( members{idcomp} ) )  ];
            
-        
-        if (tocsv == true) && (compSizes(idcomp) >= nofsc)              
-            % preparing csv file
-            fname = strcat(dobj.getCsvDir,'/table-cluster_',num2str(idcomp),'_DRT_',ave,'_',base,'_',num2str( val ),'.csv');        
-            dlmwrite(fname,hdr,'');       
+        if compSizes(idcomp) >= nofsc              
             
-            % append matrix 
-            dlmwrite(fname,mat,'-append');             
+            if (tocsv == true) 
+                % preparing csv file
+                fname = strcat(dobj.getCsvDir,'/table-cluster_',num2str(idcomp),'_DRT_',ave,'_',base,'_',num2str( val ),'.csv');        
+                dlmwrite(fname,hdr,'');       
+            
+                %  append matrix 
+                dlmwrite(fname,mat,'-append');             
+            end
             
             % count clusters with >= nofsc
             cnofs = cnofs + 1;
