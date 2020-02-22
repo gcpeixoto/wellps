@@ -1,10 +1,10 @@
-function [M,L] = computeDRTGraphMetrics(opt_metrics, drtSt)
+function [Mf,Lf] = computeDRTGraphMetrics(opt_metrics, drtSt)
 %COMPUTEDRTGRAPHMETRICS compute metrics and regression analysis for 
 %                       the whole field's networks based on DRT 
 %
 % PARAMETERS: 
-%       -   opt_metrics:   structure that should contain the following 
-%                          parameters:
+%       -   opt_metrics: structure that should contain the following 
+%                        parameters:
 %                           
 %                        -  'nofsc' (string): number of significant cells. 
 %                           This is the minimum value of cells to be 
@@ -27,10 +27,12 @@ function [M,L] = computeDRTGraphMetrics(opt_metrics, drtSt)
 %                        If empty, the WELLPS standard directory /mat is
 %                        set.
 %
-%   RETURNS:
-%       -   M : structure having full information about the graph metrics. 
+%       - drtSt:         structure of DRT connections.
 %
-%       -   L : structure having linear regression information per cluster
+%   RETURNS:
+%       -   Mf : structure having file paths to graph metrics .mat 
+%
+%       -   L : structure having file paths to linear regression .mat
 %               
 %  REMARK: see G.P. Oliveira et al. (2016), DOI: 10.1016/j.petrol.2017.06.016.
 
@@ -38,6 +40,7 @@ function [M,L] = computeDRTGraphMetrics(opt_metrics, drtSt)
 d = DirManager;
 matdir = d.getMatDir; 
 cppdir = d.getCppDir;
+
 
 % checking
 p = {'nofsc','seps','R2min'};
@@ -187,11 +190,16 @@ for n = 1:nnames
         M = M.(fnames{n});
         save( fullfile(outDir,strcat('DRT_',ave,'_',base,'_',num2str( val ),'_metrics','.mat')),'M');
         %disp('----> metrics .mat file saved.')                
-
+                
         L = L.(fnames{n});
         save( fullfile(outDir,strcat('DRT_',ave,'_',base,'_',num2str( val ),'_linregr','.mat')),'L');
         %disp('----> regression .mat file saved.')
                 
+        % files
+        Mf.(fnames{n}) = fullfile(outDir,strcat('DRT_',ave,'_',base,'_',num2str( val ),'_metrics','.mat'));
+        Lf.(fnames{n}) = fullfile(outDir,strcat('DRT_',ave,'_',base,'_',num2str( val ),'_linregr','.mat'));
+        
+        
     else        
         fprintf('=> No components found. You may try to increase "nofsc" and rerun the code.\n');
     end        

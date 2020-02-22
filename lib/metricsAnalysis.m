@@ -15,7 +15,6 @@ function dataDir = metricsAnalysis(opt_analytics)
 % checking
 p = {'loaddir', ...
      'drtlist', ...
-     'complist', ...
      'krule', ...
      'logbase', ...
      'savedir', ...
@@ -32,7 +31,6 @@ end
 
 dataDir = opt_analytics.savedir;
 D = opt_analytics.drtlist;
-idcomp = opt_analytics.complist;
 ld = opt_analytics.loaddir;
 r = opt_analytics.krule;
 b = opt_analytics.logbase;
@@ -50,8 +48,8 @@ for drt = D
     
     % try to load .mat files required for analysis     
     f1 = fullfile(ld,char(strcat(join({'DRT',r,b,num2str(drt)},'_'),'.mat')));
-    f2 = fullfile(ld,char(strcat(join({'DRT',r,b,num2str(drt),'Metrics'},'_'),'.mat')));
-    f3 = fullfile(ld,char(strcat(join({'DRT',r,b,num2str(drt),'LinRegr'},'_'),'.mat')));
+    f2 = fullfile(ld,char(strcat(join({'DRT',r,b,num2str(drt),'metrics'},'_'),'.mat')));
+    f3 = fullfile(ld,char(strcat(join({'DRT',r,b,num2str(drt),'linRegr'},'_'),'.mat')));
            
     if ~exist(f1,'file') || ~exist(f2,'file') || ~exist(f3,'file')
         error('wellps:metricsAnalysis',... 
@@ -70,7 +68,7 @@ for drt = D
     fprintf('=> DRT = %d ...\n',drt);
     
     % loop over components
-    for c = idcomp
+    for c = 1:numel(M.idComp)
         
         fprintf('==> Analyzing cluster = %d ...\n',c);
                 
