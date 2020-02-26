@@ -1,6 +1,7 @@
 %% CASE: LaMEP/LCPetro - heterogeneous 
 
 mrstVerbose off  % turn on verbose
+case_name = 'LL-H-1';                                                                                                 
 
 % TODO This model has the keyword 'EQUALSI' for KY and KZ
 % Hence, the code does not stores PROPS.KY and PROPS.KZ. 
@@ -20,6 +21,8 @@ d = DirManager();
 load(fullfile(d.getBenchMarksDir,'lamep-lcpetro','mrst','LL-H-1-G.mat'));
 load(fullfile(d.getBenchMarksDir,'lamep-lcpetro','mrst','LL-H-1-PROPS.mat'));
 
+%% Compute parameters 
+P = computeParams(G,PROPS); 
 
 % ploting
 %plotCellData(G,PROPS.PHI);
@@ -28,16 +31,14 @@ load(fullfile(d.getBenchMarksDir,'lamep-lcpetro','mrst','LL-H-1-PROPS.mat'));
 S = getStats(d,P,{'DRTN_LN','DRTH_LN','DRTG_LN'},'n');
 
 % number of significant cells
-nofsc = 30;
+nofsc = 8;
 
-% (harmonic, nofsc = 30, DRT 1-12) => {339,2} clusters for DRT = {11,12}
-% (normalized, nofsc = 20,30, DRT 7-11) => 0 clusters for all
-drtN = S{1}(2:end,1);
-drtStN = findDRTConnections(d,drtN, P, 'normalized','ln',nofsc,'y', 1);
-drtH = S{2}(3:end,1);
-drtStH = findDRTConnections(d,drtH, P, 'harmonic','ln',nofsc,'y', 1);
-drtG = S{3}(1:end,1);
-drtStG = findDRTConnections(d,drtG, P, 'geometric','ln',nofsc,'y', 1);
+aux = S{1}(:,1);
+drtN = aux(aux > 0);
+drtStN = findDRTConnections(d,drtN, P, 'normalized','ln',nofsc,'n', 1);
+aux = S{2}(:,1);
+drtH = aux(aux > 0);
+drtStH = findDRTConnections(d,drtH, P, 'harmonic','ln',nofsc,'n', 1);
 
 
 %% Metrics analyzer
@@ -47,6 +48,27 @@ opt.R2min = 0.9;
 
 % compute
 [mH,lH] = computeDRTGraphMetrics(opt,drtStH);
+[mN,lN] = computeDRTGraphMetrics(opt,drtStN);
 
 
+% DRT 
+D = str2double(cellfun(@(x) x(4:end),fieldnames(mH),'UniformOutput',false))';
+
+%% Metrics data analysis
+
+analytics.loaddir = d.getMatDir;
+analytics.logbase = 'ln'; % use the same as that for findDRTConnections!
+analytics.savedir = fullfile(d.getCsvDir,case_name);
+analytics.fileperf = true;
+analytics.fileminmax = true;
+analytics.filemetrics = true;
+analytics.drtlist = D;
+analytics.krule = 'harmonic'; % use the same as that for findDRTConnections!         
+dataDir = metricsAnalysis(analytics);
+
+
+DN = str2double(cellfun(@(x) x(4:end),fieldnames(mN),'UniformOutput',false))';
+analytics.drtlist = DN;
+analytics.krule = 'normalized'; % use the same as that for findDRTConnections!     
+dataDir2 = metricsAnalysis(analytics);
 
