@@ -1,7 +1,49 @@
-function clusterFitSt = processClusterFit(model,G,drtValue,idcomp,ave,base,theta)
+function clusterFitSt = processClusterFit(dobj,opt_fit)
 % PROCESSCLUSTERFIT Determines fit parameters in order to setup nonuniform 
 % (5-spot) well patterns based on a best-fit ellipsoid obtained 
 % from the convex hull points of the selected cluster(s).
+%
+% SYNOPSIS: 
+%       dobj = d.DirManager; 
+%       clusterFitSt = processClusterFit(dobj,opt_fit)
+%
+% PARAMETERS:
+%       - dobj : pointer to class DirManager(); 
+%
+%       - opt_fit: struct with fields to process the fitting. Acceptable 
+%                  fields are: 
+%
+%           - 'grid': MRST-like G grid structure (minimum requirement) 
+%
+%           - 'thetalist': array of angles to build rotated patterns
+%           (minimum requirement)
+%
+%           - 'savedir': path to save .mat files (minimum requirement)
+%
+%           - 'loaddir': path to directory to load .mat files 
+%           
+%           - 'drtSt': path to .mat file having a 'drtSt' struct 
+%
+%           - 'metricsSt': path to .mat file having a 'M' metrics struct
+%                  
+%           - 'logbase': log base
+%
+%           - 'drtlist': list of DRT values
+%
+%           - 'krule': permeability averaging rule
+%
+%           - 'comps': array of components to parse
+%
+%           - 'thetalist': array of angles to process
+%
+% RETURNS: 
+%   
+%       - 'ClusterFitSt': struct having lots of fields related to 
+%          the ellipsoid fitting. It is hierarchically organized 
+%          by DRT > Cluster > Pattern as a multilevel struct. 
+%          See comments throughout this function. 
+%
+%
 %
 % METHODOLOGY
 % ===========
@@ -9,7 +51,7 @@ function clusterFitSt = processClusterFit(model,G,drtValue,idcomp,ave,base,theta
 % - Consider G a cluster with arbitrary shape and c the 
 %   voxels (vertices) that belong to the convex hull H of G 
 %
-% - The best-fit ellipsoid based on c points returns 
+% - The best-fit ellipsoid bd on c points returns 
 %   the 3 main direction vectors, the 3 radii a,b,c of each axis 
 %   and the center point 
 %
@@ -24,12 +66,15 @@ function clusterFitSt = processClusterFit(model,G,drtValue,idcomp,ave,base,theta
 %           c-P3
 %                                Pk are such that min {d(Xk,H)} in L2-norm
 %                 o X2
+%
+%
 %  RELATIONS
-%  ========
+%  =========
 %
 %  X1 = C + a*E1        X2 = C - a*E1
 %  Y1 = C + b*E2        Y2 = C - b*E2
 %  Z1 = C + c*E3        Z2 = C - c*E3, for orthonormal basis {E1,E2,E3}
+%
 %
 %  NONUNIFORM 5-SPOT PATTERNS
 %  ==========================
@@ -39,6 +84,7 @@ function clusterFitSt = processClusterFit(model,G,drtValue,idcomp,ave,base,theta
 %    + 4 INJECTOR columns placed at 
 %    Pj = (Pj_x,Pj_y,k), k \in klims, j = 1,2,3,4. 
 %  
+%
 %  ROTATED CONFIGURATIONS
 %  ======================
 %
@@ -47,17 +93,69 @@ function clusterFitSt = processClusterFit(model,G,drtValue,idcomp,ave,base,theta
 %    {C,X1<->X2,Y1<->Y2}
 %
 %
+% Prof. Dr. Gustavo Oliveira, @LAMEP/UFPB
+
 
 %% Load cluster info
 
-% create output dir
-outDir = strcat('../mat/ClusterFitData/',model);
-if exist(outDir,'dir') ~= 7
-    warning('wellps:processClusterFit',...
-        ['Creating data directory into:',...
-         '"../mat/ClusterFitData/".']);
-    mkdir(outDir); 
-end  
+% checking minimum fields
+p = {'grid', ...             
+     'thetalist', ...
+     'savedir'};
+ 
+if ~all(ismember(p,fieldnames(opt_fit)))   
+    error(['wellps:processClusterFit ', ... 
+           '''opt_fit'' must be a ''struct'' object with ', ... 
+           'specified minimum fields that are missing.', ...
+           'See function help.']);
+end
+
+
+% if loaddir is not given, it will try files in the loop
+if any(strcmp(fieldnames(opt_fit),'loaddir'))
+    ld = opt_fit.loaddir; 
+else
+    ld = dobj.getMatDir;
+end
+
+
+% if drtlist is not given, we use a temporary dummy -100 that will be
+% changed in the loop (this indicates a unique file to process)
+if any(strcmp(fieldnames(opt_fit),'drtlist'))
+    drtValue = opt_fit.drtlist;
+else
+    drtValue = -100; 
+end
+
+
+% logbase checking
+if any(strcmp(fieldnames(opt_fit),'logbase'))
+    b = opt_fit.logbase;
+else
+    b = 'none'; 
+end
+
+% permeability averaging rule checking
+if any(strcmp(fieldnames(opt_fit),'krule'))
+    r = opt_fit.krule;
+else
+    r = 'none'; 
+end
+
+
+% if 'comps' is not given, it will take all in the loop
+if any(strcmp(fieldnames(opt_fit),'comps'))
+    comps = opt_fit.comps;
+else
+    comps = []; 
+end
+
+G = opt_fit.grid;
+theta = opt_fit.thetalist;
+dataDir = opt_fit.savedir;
+
+% create srdir
+if exist(dataDir,'dir') ~= 7, mkdir(dataDir); end   
 
 % compute grid geometry if input is not ready 
 if ~any(ismember(fieldnames(G.cells),'centroids'))
@@ -69,41 +167,58 @@ globInd = nan(prod(G.cartDims),1);
 globInd(G.cells.indexMap) = 1:G.cells.num;
 
 % loop over DRT value
+tstart = tic; % timing
 for drt = drtValue
     
-    % try load .mat files required by user
-    fidd = strcat('../mat/DRT_',ave,'_',base,'_',num2str(drt),'.mat');
-    fidm = strcat('../mat/DRT_',ave,'_',base,'_',num2str(drt),'_Metrics.mat');
-    fidr = strcat('../mat/DRT_',ave,'_',base,'_',num2str(drt),'_LinRegr.mat');
-   
-    if ~exist(fidd,'file') || ~exist(fidm,'file') || ~exist(fidr,'file')
-        error('wellps:metricsAnalyzer',... 
-            ['All the required files: \n %s \n %s \n were not found', ...
-             'for DRT = %d. Have you run wellps:computeDRTGraphMetrics'], ...
-             fidm,fidr,drt);
+    % try to load .mat files required for analysis     
+    f1 = fullfile(ld,char(strcat(join({'DRT',r,b,num2str(drt)},'_'),'.mat')));
+    f2 = fullfile(ld,char(strcat(join({'DRT',r,b,num2str(drt),'metrics'},'_'),'.mat')));    
+           
+    if ~exist(f1,'file') || ~exist(f2,'file')
+        
+        warning('wellps:metricsAnalysis',... 
+             ['All the required files: \n %s \n %s \n were not found ', ...
+              'for DRT = %d. Trying to load user\''s...'], f1,f2,drt);
+            
+        % try to load provided fields
+        try 
+            load(opt_fit.drtSt,'drtSt');
+            load(opt_fit.metricsSt,'M');     
+        catch         
+            error('wellps:metricsAnalysis',... 
+            '"opt_fit.drtSt" or "opt_fit.metricsSt" is missing.');         
+        end
+           
+            % average and logbase caught from loaded .mat
+            % If these fields are not empty in opt_fit, these will overwrite
+            % them, because they need to correspond to file truly loaded.
+            r = drtSt.averaging; 
+            b = drtSt.logBase;   
+            
+            % if enter here, drt will be overwritten when it assumes a
+            % unique value to compute
+            drt = drtSt.value; %#ok 
+            
+            % idem for components 
+            comps = 1:numel(M.idComp);                                                                 
+    
     else
         
-        % load DRT struct
-        load(fidd,'drtSt');                
+        % load DRT struct, metrics, and linregr
+        load(f1,'drtSt');                
+        load(f2,'M');             
         
-        % load metrics
-        load(fidm,'Maux');        
+        % all comps, if empty
+        if isempty(comps), comps = 1:numel(M.idComp); end;
         
-        % load linregr
-        %load(fidr,'Laux');        
-        
-        % rename
-        M = Maux; clear Maux;
-        %L = Laux; clear Laux;      
-        
-    end
-
-    fprintf('Sweeping DRT = %d ...\n',drt);
+    end    
     
+    fprintf('=> DRT = %d ...\n',drt);
+            
     % loop over components
-    for c = idcomp
+    for c = comps
         
-        fprintf('-----> Sweeping cluster = %d ...\n',c);
+        fprintf('==> Sweeping cluster = %d ...\n',c);
         
         % voxel coords and inds
         cvc = drtSt.compVoxelCoords{c};         
@@ -214,11 +329,11 @@ for drt = drtValue
             [RC, RP1, RP2, RP4, RP5] = deal(ROT*C, ROT*P1, ROT*P2, ROT*P4, ROT*P5);
             
             % displacing points in relation to retake center
-            D = RC - C;
-            RP1 = RP1 - D;
-            RP2 = RP2 - D;
-            RP4 = RP4 - D;
-            RP5 = RP5 - D;
+            shift = RC - C;
+            RP1 = RP1 - shift;
+            RP2 = RP2 - shift;
+            RP4 = RP4 - shift;
+            RP5 = RP5 - shift;
             
             % distances 
             dc = zeros(size(cvchull,1),1);
@@ -256,27 +371,27 @@ for drt = drtValue
                         col_neighboursR = [ ones(lz,1)*vcr(1) ones(lz,1)*vcr(2) zz ]; 
                         
                         %---- SAVE            
-                        % save colNeighsX1
+                        % sr colNeighsX1
                         clusterFitData.colNeighsX1 = col_neighbours;
             
-                        % save local coords - colNeighsX1 
+                        % sr local coords - colNeighsX1 
                         aux = global2LocalCluster(col_neighbours(:,1),...
                                                   col_neighbours(:,2),...
                                                   col_neighbours(:,3),...
                                                   im,jm,km);
                         clusterFitData.colNeighsX1LocalCoords = aux;
             
-                        % save index X1
+                        % sr index X1
                         clusterFitData.ipX1 = ip;                        
             
-                        % save voxel X1
+                        % sr voxel X1
                         clusterFitData.vcX1 = vc;
             
-                        % save local coords - vcX1 
+                        % sr local coords - vcX1 
                         aux = global2LocalCluster(vc(1),vc(2),vc(3),im,jm,km);
                         clusterFitData.vcX1LocalCoords = aux;
             
-                        % save colNeighsX1R
+                        % sr colNeighsX1R
                         clusterFitData.colNeighsX1R = col_neighboursR;
             
                         % local coords - colNeighsX1R 
@@ -322,27 +437,27 @@ for drt = drtValue
 
                         %---- SAVE
 
-                        % save colNeighsX2
+                        % sr colNeighsX2
                         clusterFitData.colNeighsX2 = col_neighbours;
 
-                        % save local coords - colNeighsX2
+                        % sr local coords - colNeighsX2
                         aux = global2LocalCluster(col_neighbours(:,1),...
                                                   col_neighbours(:,2),...
                                                   col_neighbours(:,3),...
                                                   im,jm,km);
                         clusterFitData.colNeighsX2LocalCoords = aux;
 
-                        % save index X2
+                        % sr index X2
                         clusterFitData.ipX2 = ip;                        
 
-                        % save voxel X2
+                        % sr voxel X2
                         clusterFitData.vcX2 = vc;
 
-                        % save local coords - vcX2
+                        % sr local coords - vcX2
                         aux = global2LocalCluster(vc(1),vc(2),vc(3),im,jm,km);
                         clusterFitData.vcX2LocalCoords = aux;
 
-                        % save colNeighsX2R
+                        % sr colNeighsX2R
                         clusterFitData.colNeighsX2R = col_neighboursR;
 
                         % local coords - colNeighsX2R 
@@ -388,27 +503,27 @@ for drt = drtValue
 
                         %---- SAVE
 
-                        % save colNeighsY1
+                        % sr colNeighsY1
                         clusterFitData.colNeighsY1 = col_neighbours;
 
-                        % save local coords - colNeighsY1 
+                        % sr local coords - colNeighsY1 
                         aux = global2LocalCluster(col_neighbours(:,1),...
                                                   col_neighbours(:,2),...
                                                   col_neighbours(:,3),...
                                                   im,jm,km);
                         clusterFitData.colNeighsY1LocalCoords = aux;
 
-                        % save index Y1
+                        % sr index Y1
                         clusterFitData.ipY1 = ip;                        
 
-                        % save voxel Y1
+                        % sr voxel Y1
                         clusterFitData.vcY1 = vc;
 
-                        % save local coords - vcY1 
+                        % sr local coords - vcY1 
                         aux = global2LocalCluster(vc(1),vc(2),vc(3),im,jm,km);
                         clusterFitData.vcY1LocalCoords = aux;
 
-                        % save colNeighsY1R
+                        % sr colNeighsY1R
                         clusterFitData.colNeighsY1R = col_neighboursR;
 
                         % local coords - colNeighsY1R 
@@ -454,27 +569,27 @@ for drt = drtValue
 
                         %---- SAVE
 
-                        % save colNeighsY2
+                        % sr colNeighsY2
                         clusterFitData.colNeighsY2 = col_neighbours;
 
-                        % save local coords - colNeighsY2
+                        % sr local coords - colNeighsY2
                         aux = global2LocalCluster(col_neighbours(:,1),...
                                                   col_neighbours(:,2),...
                                                   col_neighbours(:,3),...
                                                   im,jm,km);
                         clusterFitData.colNeighsY2LocalCoords = aux;
 
-                        % save index Y2
+                        % sr index Y2
                         clusterFitData.ipY2 = ip;                        
 
-                        % save voxel Y2
+                        % sr voxel Y2
                         clusterFitData.vcY2 = vc;
 
-                        % save local coords - vcY2
+                        % sr local coords - vcY2
                         aux = global2LocalCluster(vc(1),vc(2),vc(3),im,jm,km);
                         clusterFitData.vcY2LocalCoords = aux;
 
-                        % save colNeighsY2R
+                        % sr colNeighsY2R
                         clusterFitData.colNeighsY2R = col_neighboursR;
 
                         % local coords - colNeighsY2R 
@@ -549,7 +664,7 @@ for drt = drtValue
             % - 3rd level: Pattern{Z}, where Z is the pattern number
             % according to the angle chosen. 
             % 
-            % Then, we have something like:
+            % Then, we hr something like:
             %
             % STRUCTURE LAYOUT
             % ================
@@ -605,7 +720,17 @@ for drt = drtValue
         
     end               
     
-    % save to .mat (separated by DRT)
-    save( strcat(outDir,'DRT_',ave,'_',base,'_',num2str( drt ),'_clusterFitData_',model,'.mat'),'clusterFitSt');
+    % save to .mat (separated by DRT)    
+    fn = fullfile(dataDir,char(strcat(join({'DRT',                    ...
+                                            r,b,                      ...
+                                            num2str(drt),             ... 
+                                            'clusterFitData'},'_'),   ... 
+                                            '.mat')));
+    save(fn,'clusterFitSt');                                        
+    
 end
+
+tfinal = toc(tstart);
+fprintf('processClusterFit finished after %g seconds. \n',tfinal);
+
 

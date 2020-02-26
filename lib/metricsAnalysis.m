@@ -3,12 +3,20 @@ function dataDir = metricsAnalysis(opt_analytics)
 % file.
 %
 % PARAMETERS:
-%       - drtValue:  array of DRT values to analyze.
-%       - idcomp:   cluster components to analyze for this DRT.
-%       - ave:      averaging technique option to read correspondent file.
-%       - base:     log base option to read correspondent file.
+%       - opt_analytics: structure having options for analysis. The fields
+%                        accepted are the following:
+%                         
+%          - 'loaddir': path to load .mat files
+%          - 'drtlist': list of DRT values to analyze
+%          - 'krule':   permeability average rule 
+%          - 'logbase:  log base option to read correspondent file
+%          - 'savedir': path to save .csv files
+%          - 'fileperf': flag to save performance table (bool)
+%          - 'fileminmax': flag to save MinMax file (bool)
+%          - 'filemetrics': flag to save metrics file (bool)
 %
 % RETURNS:
+%
 %       - export .csv files to disk.
 
 

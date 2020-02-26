@@ -18,7 +18,7 @@ function [figelip,figres] = plotEllipsoidFit(G,drtSt,clusterFitSt,drt,comp,patte
 %   comp  - cluster ID (connected component of the respective DRT) 
 %
 %   pattern - non-uniform well pattern to be considered for plotting. 
-%             There are 4 possibilites: 
+%             There are usually 4 main choices: 
 %             
 %               1:  0 degree
 %               2: 30 degrees
