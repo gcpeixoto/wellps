@@ -32,7 +32,7 @@ function [Mf,Lf] = computeDRTGraphMetrics(opt_metrics, drtSt)
 %   RETURNS:
 %       -   Mf : structure having file paths to graph metrics .mat 
 %
-%       -   L : structure having file paths to linear regression .mat
+%       -   Lf : structure having file paths to linear regression .mat
 %               
 %  REMARK: see G.P. Oliveira et al. (2016), DOI: 10.1016/j.petrol.2017.06.016.
 
