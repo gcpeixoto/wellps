@@ -45,7 +45,7 @@ G = processGRDECL(G);
 %% Compute parameters 
 P = computeParams(G,PROPS); 
 
-%plotCellData(G,PROPS.SO(PROPS.ACTNUM == 1))
+%plotCellData(G,PROPS.SO(on))
 
 %% Mapping
 Ind = nan(prod(G.cartDims),1);
@@ -53,15 +53,33 @@ Ind(G.cells.indexMap) = 1:G.cells.num;
 
 
 %% Oil-saturated cells 
-%idso = find(PROPS.SO(PROPS.ACTNUM == 1) > 0);
-%id = find(Ind(idso));
-%subG = extractSubgrid(G,id);
-%plotCellData(subG,find(Ind(PROPS.SO(id))));
+idso = find(PROPS.SO > 0);
+SOP = PROPS.SO(idso);
+
+% zero oil sat
+%idsoz = find(PROPS.SO == 0);
+%SOZ = PROPS.SO(idsoz);
+
+idsoloc = Ind(idso);
+
+subG = extractSubgrid(G,idsoloc);
+plotCellData(subG,SOP,'EdgeColor','None')
 
 % parameters
-%getPso = @(x) x(idso); 
-%Pso = structfun(getPso,P,'UniformOutput',false);
-%Sso = getStats(d,Pso,{'DRTH_LN'},'n');
+getPso = @(x) x(idso); 
+Pso = structfun(getPso,P,'UniformOutput',false);
+Sso = getStats(d,Pso,{'DRTH_LN'},'n');
+
+
+%% DRT choice 
+
+% get all DRTs 
+drtlist = Sso{1}(:,1); 
+drtlist = drtlist(drtlist > 0);
+
+% compute HFUs by DRT
+nofsc = 10;
+drtSt = findDRTConnections(d,drtlist, Pso, 'harmonic','ln',nofsc,'n', 1);
 
 
 
