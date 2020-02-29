@@ -187,34 +187,39 @@ for f = 1:length(mfn)
 end
 
 %% Subclustering for fully and partially oil-saturated clusters
+% In this step, it is necessary to run WELLPS to compute metrics for the
+% region non-saturated in oil. This piece of code is included in
+% computeDRTGraphMetrics and it was slightly modified for the current
+% purpose.
 
-%======
-% INCORRECT!!! 
 hpifn = fieldnames(HPInfo);
-for f = 1:length(hpifn)
+
+for f = 1:length(hpifn) % loop DRTs
     
     hpifnc = fieldnames(HPInfo.(hpifn{f}));
     
-    for fc = 1:length(hpifnc)
+    for fc = 1:length(hpifnc) % loop clusters
         
+        % subclustering required only for partially saturated clusters
+        % since the fully saturated ones are already computed.
         if strcmp( HPInfo.(hpifn{f}).(hpifnc{fc}).oilStatusName, 'partially saturated' )
             
             % metrics 
             cvi = HPInfo.(hpifn{f}).(hpifnc{fc}).compVoxelInds;            
             cvc = HPInfo.(hpifn{f}).(hpifnc{fc}).compVoxelCoords;
-            mark = HPInfo.(hpifn{f}).(hpifnc{fc}).oilSatMarker;   
-            cvc = cvc(mark,:);            
-            cvi = cvi(mark);
+            mark = HPInfo.(hpifn{f}).(hpifnc{fc}).oilSatMarker;  % marker functon
+            auxind = find(mark); % get indices of the oil zone cells.                        
             
-            if size(cvc,1) > 1 % bypass clusters that have only 1 cell outside oil zone
+            % bypass clusters that have only 1 cell outside oil zone
+            if size(cvc,1) > 1 
             
                 indIJ = [];
-                for i = 1:size(cvc,1)        
-                    for j = i:size(cvc,1)                                                            
+                for i = 1:numel(auxind)
+                    for j = numel(auxind)
                           if i ~= j % skipping null distance                   
-                              dist = sqrt( ( cvc(i,1) - cvc(j,1) )^2 + ...
-                                           ( cvc(i,2) - cvc(j,2) )^2 + ...
-                                           ( cvc(i,3) - cvc(j,3) )^2 ); 
+                              dist = sqrt( ( cvc(auxind(i),1) - cvc(auxind(j),1) )^2 + ...
+                                           ( cvc(auxind(i),2) - cvc(auxind(j),2) )^2 + ...
+                                           ( cvc(auxind(i),3) - cvc(auxind(j),3) )^2 ); 
 
                               % detecting neighbour voxels                  
                               if dist <= 1     % connectivity criterion
@@ -224,6 +229,13 @@ for f = 1:length(hpifn)
                           end
                      end
                 end   
+                
+                % bypass non-connections (investigate here what happened!!)
+                if isempty(indIJ)
+                    continue
+                end
+                
+                % invoke graphmetrics
                 aux = [ indIJ(:,2) indIJ(:,1) ]; % reverse edges [ j i ]
                 indIJ = [ indIJ; aux ]; % filling                                     
                 Madj = sparse( indIJ(:,1),indIJ(:,2),1,size(cvc,1),size(cvc,1) ); 
@@ -256,9 +268,11 @@ for f = 1:length(hpifn)
                 iCnode = nodeID(iC);    % getting node id (there might be more than 1)
                 ivC = cvc(iCnode,: );   
 
+                % save info
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelCoords = ivC(1,:);
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessValue = maxC;
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelInd = cvi(iCnode);
+                SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelMappedInd = Ind(cvi(iCnode));
             end
             
         end
@@ -271,9 +285,11 @@ end
 
 %% Plotting example (for visibility)
 
-%{
-exDRT = fieldnames(HPInfo); exDRT = exDRT{1};
-exC = fieldnames(HPInfo.(exDRT)); exC = exC{1};
+% example values taken from HPInfo
+exi = 1; % exi-th DRT value in the list
+exic = 1; % exic-th cluster in the list
+exDRT = fieldnames(HPInfo); exDRT = exDRT{exi};
+exC = fieldnames(HPInfo.(exDRT)); exC = exC{exic};
 excvi = HPInfo.(exDRT).(exC).compVoxelInds;
 excvim = HPInfo.(exDRT).(exC).mappedCompVoxelInds;
 exmarker = HPInfo.(exDRT).(exC).oilSatMarker;
@@ -287,8 +303,13 @@ plotCellData(extractSubgrid(G,excvim(~exmarker)),exso(~exmarker),'FaceColor','g'
 
 plotCellData(extractSubgrid(G,excvim),exgamma) % cluster nonsaturated portion
 
+% max clo from subcluster
 mask = false(G.cells.num,1);
-mask(SubM.(exDRT).(exC).maxClosenessVoxelInd) = true;
-plotGrid(G,mask)
-%}
+mask(SubM.(exDRT).(exC).maxClosenessVoxelMappedInd) = true;
+plotGrid(G,mask,'FaceColor',[0.5,0.5,0.5],'EdgeColor','m' );
+
+% max gamma from subcluster
+mask(HPInfo.(exDRT).(exC).maxGammaPotentialMappedInd) = true;
+plotGrid(G,mask,'FaceColor','k','EdgeColor','m' );
+
 
