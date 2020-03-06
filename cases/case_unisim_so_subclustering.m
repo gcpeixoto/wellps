@@ -69,7 +69,7 @@ S = getStats(d,P,{'DRTH_LN'},'n');
 % get all DRTs 
 drtlist = S{1}(:,1); 
 drtlist = drtlist(drtlist > 0);
-drtlist = 13;
+%drtlist = 13;
 
 % compute HFUs by DRT
 nofsc = 10;
@@ -273,6 +273,36 @@ for f = 1:length(hpifn) % loop DRTs
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessValue = maxC;
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelInd = cvi(iCnode);
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelMappedInd = Ind(cvi(iCnode));
+                
+                SubM.(hpifn{f}).(hpifnc{fc}).gammaPotential = ...
+                    HPInfo.(hpifn{f}).(hpifnc{fc}).gammaPotential;
+                
+                SubM.(hpifn{f}).(hpifnc{fc}).maxGammaPotentialCoords = ...
+                    HPInfo.(hpifn{f}).(hpifnc{fc}).maxGammaPotentialCoords;
+                
+                SubM.(hpifn{f}).(hpifnc{fc}).maxGammaPotentialGlobalInd = ...
+                    HPInfo.(hpifn{f}).(hpifnc{fc}).maxGammaPotentialGlobalInd;
+                
+                SubM.(hpifn{f}).(hpifnc{fc}).maxGammaPotentialMappedInd = ...
+                    HPInfo.(hpifn{f}).(hpifnc{fc}).maxGammaPotentialMappedInd;
+                
+                
+                %save perforation table for subcluster MaxC       
+                ptset.savedir = fullfile(d.getTmpDir,'Subclustering',hpifn{f},hpifnc{fc});
+                ptset.wellname = strcat('W',hpifnc{fc},'SubMaxC');
+                ptset.geometry = 'K';
+                ptset.perfs = SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelCoords;               
+                ptset = savePerfTable(ptset);
+                
+                %save perforation table for classical cluster MaxC                   
+                qtset.savedir = fullfile(d.getTmpDir,'Subclustering',hpifn{f},hpifnc{fc});
+                qtset.wellname = strcat('W',hpifnc{fc},'MaxC');
+                qtset.geometry = 'K';
+                qtset.perfs = HPInfo.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelCoords;               
+                qtset = savePerfTable(qtset);
+                
+                clear ptset qtset
+                
             end
             
         end
@@ -286,30 +316,33 @@ end
 %% Plotting example (for visibility)
 
 % example values taken from HPInfo
-exi = 1; % exi-th DRT value in the list
-exic = 1; % exic-th cluster in the list
-exDRT = fieldnames(HPInfo); exDRT = exDRT{exi};
-exC = fieldnames(HPInfo.(exDRT)); exC = exC{exic};
-excvi = HPInfo.(exDRT).(exC).compVoxelInds;
-excvim = HPInfo.(exDRT).(exC).mappedCompVoxelInds;
-exmarker = HPInfo.(exDRT).(exC).oilSatMarker;
-exso = HPInfo.(exDRT).(exC).oilSat;
-exgamma = HPInfo.(exDRT).(exC).gammaPotential;
+% exi = 1; % exi-th DRT value in the list
+% exic = 1; % exic-th cluster in the list
+% exDRT = fieldnames(HPInfo); exDRT = exDRT{exi};
+% exC = fieldnames(HPInfo.(exDRT)); exC = exC{exic};
+% excvi = HPInfo.(exDRT).(exC).compVoxelInds;
+% excvim = HPInfo.(exDRT).(exC).mappedCompVoxelInds;
+% exmarker = HPInfo.(exDRT).(exC).oilSatMarker;
+% exso = HPInfo.(exDRT).(exC).oilSat;
+% exgamma = HPInfo.(exDRT).(exC).gammaPotential;
+% 
+% plotGrid(G,'FaceAlpha',0.2,'FaceColor','k','EdgeColor','None'); % background
+% axis off
+% plotCellData(subG,SOP,'FaceAlpha',0.2,'EdgeColor','None') % oil zone
+% plotCellData(extractSubgrid(G,excvim(exmarker)),exso(exmarker),'FaceColor','c') % cluster saturated portion
+% plotCellData(extractSubgrid(G,excvim(~exmarker)),exso(~exmarker),'FaceColor','g') % cluster nonsaturated portion
+% 
+% plotCellData(extractSubgrid(G,excvim),exgamma) % cluster nonsaturated portion
+% 
+% % max clo from subcluster
+% mask = false(G.cells.num,1);
+% mask(SubM.(exDRT).(exC).maxClosenessVoxelMappedInd) = true;
+% plotGrid(G,mask,'FaceColor',[0.5,0.5,0.5],'EdgeColor','m' );
+% 
+% % max gamma from subcluster
+% mask(HPInfo.(exDRT).(exC).maxGammaPotentialMappedInd) = true;
+% plotGrid(G,mask,'FaceColor','k','EdgeColor','m' );
 
-plotGrid(G,'FaceAlpha',0.2,'FaceColor','k','EdgeColor','None'); % background
-plotCellData(subG,SOP,'FaceAlpha',0.2,'EdgeColor','None') % oil zone
-plotCellData(extractSubgrid(G,excvim(exmarker)),exso(exmarker),'FaceColor','c') % cluster saturated portion
-plotCellData(extractSubgrid(G,excvim(~exmarker)),exso(~exmarker),'FaceColor','g') % cluster nonsaturated portion
 
-plotCellData(extractSubgrid(G,excvim),exgamma) % cluster nonsaturated portion
-
-% max clo from subcluster
-mask = false(G.cells.num,1);
-mask(SubM.(exDRT).(exC).maxClosenessVoxelMappedInd) = true;
-plotGrid(G,mask,'FaceColor',[0.5,0.5,0.5],'EdgeColor','m' );
-
-% max gamma from subcluster
-mask(HPInfo.(exDRT).(exC).maxGammaPotentialMappedInd) = true;
-plotGrid(G,mask,'FaceColor','k','EdgeColor','m' );
 
 

@@ -6,6 +6,7 @@ function ptset = savePerfTable(ptset)
 %
 %   % mounting table of 40 perforations in the column [1,2,k], k = 1:40
 %   n = 40;
+%   ptset.savedir = 'temp'
 %   ptset.wellname = 'Well1';
 %   ptset.geometry = 'K';
 %   ptset.perfs = [ones(n,1),2*ones(n,1),(1:n)'];               
@@ -86,7 +87,16 @@ end
 
 % set file name 
 filen = ptset.wellname;
-filen = strcat('../tmp/perfList',filen,'.txt');
+
+% save
+if any(strcmp(fieldnames(ptset),'savedir'))
+    
+    if exist(ptset.savedir,'dir') ~= 7, mkdir(ptset.savedir); end   
+
+    filen = strcat(ptset.savedir,'/perfTable',filen,'.txt');
+else
+    filen = strcat(DirManager.getTmpDir,'/perfTable',filen,'.txt');
+end
 
 % write file
 if exist(filen,'file') == 2
