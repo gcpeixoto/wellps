@@ -110,7 +110,7 @@ line = '** UBA  ff  Status  Connection\n';
 fprintf(fid,line);
 
 % perf table
-fprintf(fid,'  PERF   GEO   %s\n',ptset.wellname);
+fprintf(fid,'  PERF   GEO   \''%s\'' \n',ptset.wellname);
 
 for n = 1:nperfs
     if n == 1

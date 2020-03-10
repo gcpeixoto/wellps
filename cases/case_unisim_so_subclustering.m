@@ -69,7 +69,7 @@ S = getStats(d,P,{'DRTH_LN'},'n');
 % get all DRTs 
 drtlist = S{1}(:,1); 
 drtlist = drtlist(drtlist > 0);
-%drtlist = 13;
+drtlist = 13;
 
 % compute HFUs by DRT
 nofsc = 10;
@@ -210,16 +210,18 @@ for f = 1:length(hpifn) % loop DRTs
             mark = HPInfo.(hpifn{f}).(hpifnc{fc}).oilSatMarker;  % marker functon
             auxind = find(mark); % get indices of the oil zone cells.                        
             
+            cvcmark = cvc(auxind,:);
+            cvimark = cvi(auxind,:);
             % bypass clusters that have only 1 cell outside oil zone
-            if size(cvc,1) > 1 
+            if size(cvcmark,1) > 1 
             
                 indIJ = [];
                 for i = 1:numel(auxind)
-                    for j = numel(auxind)
+                    for j = 1:numel(auxind)
                           if i ~= j % skipping null distance                   
-                              dist = sqrt( ( cvc(auxind(i),1) - cvc(auxind(j),1) )^2 + ...
-                                           ( cvc(auxind(i),2) - cvc(auxind(j),2) )^2 + ...
-                                           ( cvc(auxind(i),3) - cvc(auxind(j),3) )^2 ); 
+                              dist = sqrt( ( cvcmark(i,1) - cvcmark(j,1) )^2 + ...
+                                           ( cvcmark(i,2) - cvcmark(j,2) )^2 + ...
+                                           ( cvcmark(i,3) - cvcmark(j,3) )^2 ); 
 
                               % detecting neighbour voxels                  
                               if dist <= 1     % connectivity criterion
@@ -229,16 +231,14 @@ for f = 1:length(hpifn) % loop DRTs
                           end
                      end
                 end   
-                
-                % bypass non-connections (investigate here what happened!!)
-                if isempty(indIJ)
-                    continue
-                end
-                
+                                               
                 % invoke graphmetrics
                 aux = [ indIJ(:,2) indIJ(:,1) ]; % reverse edges [ j i ]
-                indIJ = [ indIJ; aux ]; % filling                                     
-                Madj = sparse( indIJ(:,1),indIJ(:,2),1,size(cvc,1),size(cvc,1) ); 
+                indIJ = [ indIJ; aux ]; % filling       
+                
+                % !!! This 0.5 was placed here because with 1, the sparse 
+                % matrix was returning entries = 2. Why is that??
+                Madj = sparse( indIJ(:,1),indIJ(:,2),0.5,size(cvcmark,1),size(cvcmark,1) ); 
 
                 edfile = saveAdjEdges(Madj);              
                 outfile = fullfile(d.getTmpDir,'metrics.txt');
@@ -266,16 +266,16 @@ for f = 1:length(hpifn) % loop DRTs
                 maxC = max(cln);        % max closeness = min farness
                 iC = cln == maxC;       % network closer nodes
                 iCnode = nodeID(iC);    % getting node id (there might be more than 1)
-                ivC = cvc(iCnode,: );   
+                ivC = cvcmark(iCnode,: );   
 
                 % save info
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelCoords = ivC(1,:);
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessValue = maxC;
                 
-                aux = cvi(iCnode); aux = aux(1); % gets only first of the list
+                aux = cvimark(iCnode); aux = aux(1); % gets only first of the list
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelInd = aux;
                 
-                aux = Ind(cvi(iCnode)); aux = aux(1); % gets only first of the list
+                aux = Ind(cvimark(iCnode)); aux = aux(1); % gets only first of the list
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelMappedInd = aux;                
                 
                 SubM.(hpifn{f}).(hpifnc{fc}).gammaPotential = ...
@@ -326,8 +326,8 @@ end
 
 % example values taken from HPInfo
 exi = 1; % exi-th DRT value in the list
-exic = 8; % exic-th cluster in the list ; 
-% SubM indices: C2:1; C4:3; C6:5; C11:7; C13:8; C18:11; C22:12; C25:13; C46:18; C73:20       
+exic = 13; % exic-th cluster in the list ; 
+% SubM indices: C2:1; C3:2; C4:3; C6:5; C11:7; C13:8; C18:11; C22:12; C25:13; C46:18; C73:20       
 exDRT = fieldnames(HPInfo); exDRT = exDRT{exi};
 exC = fieldnames(HPInfo.(exDRT)); exC = exC{exic};
 excvi = HPInfo.(exDRT).(exC).compVoxelInds;
