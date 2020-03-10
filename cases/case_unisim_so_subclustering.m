@@ -271,8 +271,12 @@ for f = 1:length(hpifn) % loop DRTs
                 % save info
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelCoords = ivC(1,:);
                 SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessValue = maxC;
-                SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelInd = cvi(iCnode);
-                SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelMappedInd = Ind(cvi(iCnode));
+                
+                aux = cvi(iCnode); aux = aux(1); % gets only first of the list
+                SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelInd = aux;
+                
+                aux = Ind(cvi(iCnode)); aux = aux(1); % gets only first of the list
+                SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelMappedInd = aux;                
                 
                 SubM.(hpifn{f}).(hpifnc{fc}).gammaPotential = ...
                     HPInfo.(hpifn{f}).(hpifnc{fc}).gammaPotential;
@@ -285,6 +289,11 @@ for f = 1:length(hpifn) % loop DRTs
                 
                 SubM.(hpifn{f}).(hpifnc{fc}).maxGammaPotentialMappedInd = ...
                     HPInfo.(hpifn{f}).(hpifnc{fc}).maxGammaPotentialMappedInd;
+                
+                % oil saturated cells / total cells 
+                SubM.(hpifn{f}).(hpifnc{fc}).oilVolumeFraction = ...
+                    numel(find(HPInfo.(hpifn{f}).(hpifnc{fc}).oilSatMarker)) / ...
+                    numel(HPInfo.(hpifn{f}).(hpifnc{fc}).oilSatMarker);
                 
                 
                 %save perforation table for subcluster MaxC       
@@ -316,33 +325,53 @@ end
 %% Plotting example (for visibility)
 
 % example values taken from HPInfo
-% exi = 1; % exi-th DRT value in the list
-% exic = 1; % exic-th cluster in the list
-% exDRT = fieldnames(HPInfo); exDRT = exDRT{exi};
-% exC = fieldnames(HPInfo.(exDRT)); exC = exC{exic};
-% excvi = HPInfo.(exDRT).(exC).compVoxelInds;
-% excvim = HPInfo.(exDRT).(exC).mappedCompVoxelInds;
-% exmarker = HPInfo.(exDRT).(exC).oilSatMarker;
-% exso = HPInfo.(exDRT).(exC).oilSat;
-% exgamma = HPInfo.(exDRT).(exC).gammaPotential;
+exi = 1; % exi-th DRT value in the list
+exic = 8; % exic-th cluster in the list ; 
+% SubM indices: C2:1; C4:3; C6:5; C11:7; C13:8; C18:11; C22:12; C25:13; C46:18; C73:20       
+exDRT = fieldnames(HPInfo); exDRT = exDRT{exi};
+exC = fieldnames(HPInfo.(exDRT)); exC = exC{exic};
+excvi = HPInfo.(exDRT).(exC).compVoxelInds;
+excvim = HPInfo.(exDRT).(exC).mappedCompVoxelInds;
+exmarker = HPInfo.(exDRT).(exC).oilSatMarker;
+exso = HPInfo.(exDRT).(exC).oilSat;
+exgamma = HPInfo.(exDRT).(exC).gammaPotential;
 % 
 % plotGrid(G,'FaceAlpha',0.2,'FaceColor','k','EdgeColor','None'); % background
 % axis off
 % plotCellData(subG,SOP,'FaceAlpha',0.2,'EdgeColor','None') % oil zone
-% plotCellData(extractSubgrid(G,excvim(exmarker)),exso(exmarker),'FaceColor','c') % cluster saturated portion
-% plotCellData(extractSubgrid(G,excvim(~exmarker)),exso(~exmarker),'FaceColor','g') % cluster nonsaturated portion
+ plotCellData(extractSubgrid(G,excvim(exmarker)),exso(exmarker),'FaceColor','c') % cluster saturated portion
+ plotCellData(extractSubgrid(G,excvim(~exmarker)),exso(~exmarker),'FaceColor','g') % cluster nonsaturated portion
 % 
 % plotCellData(extractSubgrid(G,excvim),exgamma) % cluster nonsaturated portion
 % 
-% % max clo from subcluster
-% mask = false(G.cells.num,1);
-% mask(SubM.(exDRT).(exC).maxClosenessVoxelMappedInd) = true;
-% plotGrid(G,mask,'FaceColor',[0.5,0.5,0.5],'EdgeColor','m' );
+% max clo from subcluster
+mask = false(G.cells.num,1);
+mask(SubM.(exDRT).(exC).maxClosenessVoxelMappedInd) = true;
+plotGrid(G,mask,'FaceColor',[0.5,0.5,0.5],'EdgeColor','m' );
 % 
 % % max gamma from subcluster
-% mask(HPInfo.(exDRT).(exC).maxGammaPotentialMappedInd) = true;
-% plotGrid(G,mask,'FaceColor','k','EdgeColor','m' );
+% %mask(HPInfo.(exDRT).(exC).maxGammaPotentialMappedInd) = true;
+% %plotGrid(G,mask,'FaceColor','k','EdgeColor','m' );
 
+% max clo (cluster)
+mask = false(G.cells.num,1);
+cvcmax = HPInfo.(exDRT).(exC).maxClosenessVoxelCoords;
+indmax = sub2ind(G.cartDims,cvcmax(1),cvcmax(2),cvcmax(3));
+indmax = Ind(indmax(1));
+mask(indmax) = true;
+plotGrid(G,mask,'FaceColor',[0.5,0.5,0.5],'EdgeColor','r' );
 
+% checking of zone
+if exmarker(excvim == indmax)
+    fprintf('==> Max closeness of cluster %s at oil zone.\n',exC)
+else
+    fprintf('==> Max closeness of cluster %s NOT at oil zone.\n',exC)
+end
+
+if exmarker(excvim == SubM.(exDRT).(exC).maxClosenessVoxelMappedInd(1))
+    fprintf('==> Submax closeness of cluster %s at oil zone.\n',exC)
+else
+    warning('==> Submax closeness of cluster %s NOT at oil zone.\n',exC)
+end
 
 
