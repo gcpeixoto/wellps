@@ -138,6 +138,12 @@ for f = 1:length(mfn)
         
             HPInfo.(mfn{f}).(strcat('C',num2str(C))).maxClosenessVoxelCoords = ...
             Metrics.(mfn{f}).maxClosenessVoxelCoords{C};
+        
+            % mapped max clo voxel ind (takes 1st of the list)
+            cvcmax = Metrics.(mfn{f}).maxClosenessVoxelCoords{C};
+            indmax = sub2ind(G.cartDims,cvcmax(1),cvcmax(2),cvcmax(3));
+            HPInfo.(mfn{f}).(strcat('C',num2str(C))).maxClosenessVoxelIndMapped = ...
+                Ind(indmax(1));
                 
             % locate oil-saturated indices
             cvim = Ind( drtSt.(mfn{f}).compVoxelInds{C} );            
@@ -297,15 +303,15 @@ for f = 1:length(hpifn) % loop DRTs
                 
                 
                 %save perforation table for subcluster MaxC       
-                ptset.savedir = fullfile(d.getTmpDir,'Subclustering',hpifn{f},hpifnc{fc});
-                ptset.wellname = strcat('W',hpifnc{fc},'SubMaxC');
+                ptset.savedir = fullfile(d.getTmpDir,'Subclustering','SubMaxC',hpifn{f},hpifnc{fc});
+                ptset.wellname = 'W';
                 ptset.geometry = 'K';
                 ptset.perfs = SubM.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelCoords;               
                 ptset = savePerfTable(ptset);
                 
                 %save perforation table for classical cluster MaxC                   
-                qtset.savedir = fullfile(d.getTmpDir,'Subclustering',hpifn{f},hpifnc{fc});
-                qtset.wellname = strcat('W',hpifnc{fc},'MaxC');
+                qtset.savedir = fullfile(d.getTmpDir,'Subclustering','MaxC',hpifn{f},hpifnc{fc});
+                qtset.wellname = 'W';
                 qtset.geometry = 'K';
                 qtset.perfs = HPInfo.(hpifn{f}).(hpifnc{fc}).maxClosenessVoxelCoords;               
                 qtset = savePerfTable(qtset);
@@ -326,8 +332,9 @@ end
 
 % example values taken from HPInfo
 exi = 1; % exi-th DRT value in the list
-exic = 13; % exic-th cluster in the list ; 
+exic = 1; % exic-th cluster in the list ; 
 % SubM indices: C2:1; C3:2; C4:3; C6:5; C11:7; C13:8; C18:11; C22:12; C25:13; C46:18; C73:20       
+% Cases with maxC at water zone / SubMaxC at oil zone: C4; C6; C18; C22; C73
 exDRT = fieldnames(HPInfo); exDRT = exDRT{exi};
 exC = fieldnames(HPInfo.(exDRT)); exC = exC{exic};
 excvi = HPInfo.(exDRT).(exC).compVoxelInds;
@@ -339,29 +346,26 @@ exgamma = HPInfo.(exDRT).(exC).gammaPotential;
 % plotGrid(G,'FaceAlpha',0.2,'FaceColor','k','EdgeColor','None'); % background
 % axis off
 % plotCellData(subG,SOP,'FaceAlpha',0.2,'EdgeColor','None') % oil zone
- plotCellData(extractSubgrid(G,excvim(exmarker)),exso(exmarker),'FaceColor','c') % cluster saturated portion
- plotCellData(extractSubgrid(G,excvim(~exmarker)),exso(~exmarker),'FaceColor','g') % cluster nonsaturated portion
+ plotCellData(extractSubgrid(G,excvim(exmarker)),exso(exmarker),'FaceColor','c') % cluster oil portion
+ plotCellData(extractSubgrid(G,excvim(~exmarker)),exso(~exmarker),'FaceColor','g') % cluster water portion
 % 
 % plotCellData(extractSubgrid(G,excvim),exgamma) % cluster nonsaturated portion
 % 
 % max clo from subcluster
 mask = false(G.cells.num,1);
 mask(SubM.(exDRT).(exC).maxClosenessVoxelMappedInd) = true;
-plotGrid(G,mask,'FaceColor',[0.5,0.5,0.5],'EdgeColor','m' );
-% 
+plotGrid(G,mask,'FaceColor',[0.5,0.5,0.5],'EdgeColor','m' ); 
 % % max gamma from subcluster
 % %mask(HPInfo.(exDRT).(exC).maxGammaPotentialMappedInd) = true;
 % %plotGrid(G,mask,'FaceColor','k','EdgeColor','m' );
 
 % max clo (cluster)
 mask = false(G.cells.num,1);
-cvcmax = HPInfo.(exDRT).(exC).maxClosenessVoxelCoords;
-indmax = sub2ind(G.cartDims,cvcmax(1),cvcmax(2),cvcmax(3));
-indmax = Ind(indmax(1));
+indmax = HPInfo.(exDRT).(exC).maxClosenessVoxelIndMapped;
 mask(indmax) = true;
 plotGrid(G,mask,'FaceColor',[0.5,0.5,0.5],'EdgeColor','r' );
 
-% checking of zone
+%% Checking of zones
 if exmarker(excvim == indmax)
     fprintf('==> Max closeness of cluster %s at oil zone.\n',exC)
 else

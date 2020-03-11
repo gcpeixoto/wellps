@@ -93,9 +93,9 @@ if any(strcmp(fieldnames(ptset),'savedir'))
     
     if exist(ptset.savedir,'dir') ~= 7, mkdir(ptset.savedir); end   
 
-    filen = strcat(ptset.savedir,'/perfTable',filen,'.txt');
+    filen = strcat(ptset.savedir,'/perfTable',filen,'.inc');
 else
-    filen = strcat(DirManager.getTmpDir,'/perfTable',filen,'.txt');
+    filen = strcat(DirManager.getTmpDir,'/perfTable',filen,'.inc');
 end
 
 % write file
