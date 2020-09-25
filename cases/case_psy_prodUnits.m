@@ -254,6 +254,17 @@ for f = 1:nn % loop PUC
         % save info
         PUMetrics.(pucx{f}).(fn{fc}).maxClosenessVoxelCoords = ivC(1,:);
         PUMetrics.(pucx{f}).(fn{fc}).maxClosenessValue = maxC;
+                
+        % max closeness coords        
+        mcx = ivC(1,1); mcy = ivC(1,2); mcz = ivC(1,3); 
+                
+        % maxC same-column neighbors (inclusive)
+        zwide = unique(cvc(:,3)); 
+        lzwide = numel(zwide);
+        mcols = [ones(lzwide,1)*mcx, ones(lzwide,1)*mcy, zwide]; 
+        
+        % maxC + neighbors at cluster z-wide domain
+        PUMetrics.(pucx{f}).(fn{fc}).maxClosenessColNeighsZ = mcols;
 
         aux = cvi(iCnode); aux = aux(1); % gets only first of the list
         PUMetrics.(pucx{f}).(fn{fc}).maxClosenessVoxelInd = aux;
@@ -268,7 +279,14 @@ for f = 1:nn % loop PUC
         ptset.perfs = PUMetrics.(pucx{f}).(fn{fc}).maxClosenessVoxelCoords;
         ptset = savePerfTable(ptset);
         
-        clear ptset
+        %save perforation table for MaxC + column neighbors
+        qtset.savedir = fullfile(d.getTmpDir,'PSY','MaxC-Column',pucx{f},fn{fc});
+        qtset.wellname = 'W';
+        qtset.geometry = 'K';
+        qtset.perfs = PUMetrics.(pucx{f}).(fn{fc}).maxClosenessColNeighsZ;
+        qtset = savePerfTable(qtset);
+        
+        clear ptset qtset
         
     end
 
