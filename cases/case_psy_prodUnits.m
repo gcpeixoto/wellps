@@ -33,7 +33,7 @@ case_name = 'psy-prodUnits';
 
 d = DirManager(); 
 
-f = fullfile(d.getBenchMarksDir,'psy','eclipse','PSY.DATA');
+f = fullfile(d.getBenchMarksDir,'psy','eclipse','PSY.grdecl');
 
 % Unable to call buildModel because SO is a nonstandard field
 G = readGRDECL(f);
