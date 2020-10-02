@@ -4,8 +4,8 @@
 
 %
 % To run this case, the MRST's function 'readGRDECL' was modified to
-% include the keyword 'SO', which is a user-defined keyword for oil
-% saturation.
+% include the keywords 'SO' and 'PRESSURE', which are user-defined 
+% keywords to get oil saturation and initial pressure.
 %
 % ---> MODIFICATION TO BE MADE IN 'readGRDECL' (beetween ** .. **)
 %
@@ -18,7 +18,7 @@
 %                'MULTX' , 'MULTX-',             ...
 %                'MULTY' , 'MULTY-',             ...
 %                'MULTZ' , 'MULTZ-',             ...
-%                'NTG'   , 'VSH'   , **'SO'**    ...
+%                'NTG'   , 'VSH'   , **'SO'**, **'PRESSURE' ...
 %                }
 %
 % Moreover, for this case, we used a the file 'PSY.DATA'
@@ -43,6 +43,7 @@ PROPS.KY  = G.PERMY;
 PROPS.KZ  = G.PERMZ;
 PROPS.ACTNUM  = G.ACTNUM;
 PROPS.SO  = G.SO;
+PROPS.PRESS0  = G.PRESSURE;
 G = processGRDECL(G);
 G = computeGeometry(G);
 
@@ -68,26 +69,46 @@ RQI_norm = RQI_normAll(on);
 ir = find(RQI_norm > 0);
 RQI_norm_pos = RQI_norm(ir);
 
+% normalized pressure
+P_normAll = PROPS.PRESS0./max(PROPS.PRESS0);
+P_norm = P_normAll(on);
+
+
 % oil sat
 SO = PROPS.SO(on);
 io = find(SO > 0);
 SO_pos = SO(io);
 
-% proxy: RQInorm x oil sat
-RQI_SO_norm = RQI_norm(:).*SO(:);   
-in = find(RQI_SO_norm > 0);
-RQI_SO_norm = RQI_SO_norm(in);
+% productivity functions
+proxy = 'rqisop';
+switch proxy
+    case 'rqiso'
+        % proxy: RQInorm x oil sat
+        tit = 'RQI x SO';
+        RQI_SO_norm = RQI_norm(:).*SO(:);   
+        in = find(RQI_SO_norm > 0);
+        RQI_SO_norm = RQI_SO_norm(in);
+    case 'rqisop'
+        % proxy: RQInorm x oil sat x pressure_norm
+        tit = 'RQI x SO x P';
+        RQI_SO_norm = RQI_norm(:).*SO(:).*P_norm(:);   
+        in = find(RQI_SO_norm > 0);
+        RQI_SO_norm = RQI_SO_norm(in);
+end
 
 % plot proxy
-%Gn = extractSubgrid(G,in);
-%plotCellData(Gn,RQI_SO_norm,'FaceAlpha',1.0,'EdgeColor','none')
-%axis vis3d off
-%colormap jet
+figure
+Gn = extractSubgrid(G,in);
+plotCellData(Gn,RQI_SO_norm,'FaceAlpha',1.0,'EdgeColor','none')
+axis vis3d off
+colormap jet
+title(tit)
 
 % plot RQI_norm > 0
 %figure
 %Gr = extractSubgrid(G,ir);
 %plotCellData(Gr,RQI_norm_pos)
+%title(tit)
 
 % plot SO > 0
 %figure
