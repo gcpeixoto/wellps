@@ -64,7 +64,7 @@ Ind(G.cells.indexMap) = 1:G.cells.num;
 % function RQI x SO for visualization.
 
 % normalized RQI
-RQI_normAll = P.RQIN./max(P.RQIN);
+RQI_normAll = P.RQIN./max(P.RQIN(:));
 RQI_norm = RQI_normAll(on);
 ir = find(RQI_norm > 0);
 RQI_norm_pos = RQI_norm(ir);
@@ -88,12 +88,14 @@ switch proxy
         RQI_SO_norm = RQI_norm(:).*SO(:);   
         in = find(RQI_SO_norm > 0);
         RQI_SO_norm = RQI_SO_norm(in);
+        flag = '';
     case 'rqisop'
         % proxy: RQInorm x oil sat x pressure_norm
         tit = 'RQI x SO x P';
         RQI_SO_norm = RQI_norm(:).*SO(:).*P_norm(:);   
         in = find(RQI_SO_norm > 0);
         RQI_SO_norm = RQI_SO_norm(in);
+        flag = '-P';
 end
 
 % plot proxy
@@ -144,34 +146,45 @@ title(tit)
 % whose all cells have PUC(w) = X.
 
 min = mean(RQI_SO_norm); % lim inf by mean
-div = linspace(min,1,4); % divisions for 3 classes
 
 % productivity unit class
 so = reshape(PROPS.SO,G.cartDims);
 RQIso = RQI_normAll.*so;
-
 PUC = RQIso;
 
-c0 = PUC < div(1); % class 0 (ignored)
-c1 = div(1) <= PUC & PUC <  div(2); % class 1
-c2 = div(2) <= PUC & PUC <  div(3); % class 2
-c3 = div(3) <= PUC & PUC <= div(4); % class 3
+nclasses = 3;
+div = linspace(min,1,nclasses+1); % divisions for nclasses
 
-PUC(c0) = 0;
-PUC(c1) = 1;
-PUC(c2) = 2;
-PUC(c3) = 3;
+switch nclasses 
+    case 3       
+        c0 = PUC < div(1); % class 0 (ignored)
+        c1 = div(1) <= PUC & PUC <  div(2); % class 1
+        c2 = div(2) <= PUC & PUC <  div(3); % class 2
+        c3 = div(3) <= PUC & PUC <= div(4); % class 3
+        PUC(c0) = 0;
+        PUC(c1) = 1;
+        PUC(c2) = 2;
+        PUC(c3) = 3;
+        
+        puc = 1:3; % only 3 classes matter
+    case 2        
+        c0 = PUC < div(1); % class 0 (ignored)
+        c1 = div(1) <= PUC & PUC <  div(2); % class 1
+        c2 = div(2) <= PUC & PUC <  div(3); % class 2        
+        PUC(c0) = 0;
+        PUC(c1) = 1;
+        PUC(c2) = 2;        
+        puc = 1:2; % only 2 classes matter
+end
 
 %% Productivity Units 
 
 % compute PUs by PUC
-nofsc = 10; % only for .csv
-puc = 1:3; % only 3 classes matter
+nofsc = 50; % only for .csv
 pucSt = findConnectionsByPUC(d,puc,PUC,nofsc,'y',1);
 
-
 % minimum number of cells to consider to get clusters
-nofc = 10; 
+nofc = 50; 
 
 pucx = fieldnames(pucSt);
 nn = length(pucx);
@@ -201,6 +214,12 @@ for f = 1:nn
             pucSt.(pucx{f}).compVoxelCoords{C};                                    
                                     
         end
+    else
+        % exclude empty PUC from postoperation; 
+        % REMARK: improve this step, because it assumes that if I do not
+        % have for instance a PUC2, I won't have a PUC3. But this is not
+        % perfectly true. 
+        nn = nn - 1; 
     end
 end
 
@@ -294,14 +313,14 @@ for f = 1:nn % loop PUC
         PUMetrics.(pucx{f}).(fn{fc}).maxClosenessVoxelMappedInd = aux;                
 
         %save perforation table for cluster MaxC       
-        ptset.savedir = fullfile(d.getTmpDir,'PSY','MaxC',pucx{f},fn{fc});
+        ptset.savedir = fullfile(d.getTmpDir,strcat('PSY',flag),'MaxC',pucx{f},fn{fc});
         ptset.wellname = 'W';
         ptset.geometry = 'K';
         ptset.perfs = PUMetrics.(pucx{f}).(fn{fc}).maxClosenessVoxelCoords;
         ptset = savePerfTable(ptset);
         
         %save perforation table for MaxC + column neighbors
-        qtset.savedir = fullfile(d.getTmpDir,'PSY','MaxC-Column',pucx{f},fn{fc});
+        qtset.savedir = fullfile(d.getTmpDir,strcat('PSY',flag),'MaxC-Column',pucx{f},fn{fc});
         qtset.wellname = 'W';
         qtset.geometry = 'K';
         qtset.perfs = PUMetrics.(pucx{f}).(fn{fc}).maxClosenessColNeighsZ;
@@ -316,15 +335,35 @@ end
 
 %% Plot proxy
 figure
+subplot(211)
+plotGrid(G,'FaceAlpha',0.1,'FaceColor','k','EdgeColor','None'); 
 Gn = extractSubgrid(G,in);
 plotCellData(Gn,RQI_SO_norm,'FaceAlpha',1.0,'EdgeColor','none')
-axis off; colormap jet; colorbar
-title('$RQI_n \times s_o(t)$','interpreter','latex')
+lighting phong, camproj perspective
+axis tight equal off, view(101,30)
+subplot(212)
+plotGrid(G,'FaceAlpha',0.1,'FaceColor','k','EdgeColor','None'); 
+Gn = extractSubgrid(G,in);
+plotCellData(Gn,RQI_SO_norm,'FaceAlpha',1.0,'EdgeColor','none')
+lighting phong, camproj perspective
+axis tight equal off, view(90,0)
+colormap(jet(35)); 
+cbar = colorbar;
+cbar.Box = 'off';
+cbar.Location = 'southoutside';
+cbar.Label.String = '$\mathcal{I}(c,t=0)$';
+cbar.Label.Interpreter = 'latex';
+cbar.Label.FontSize = 14;
+cbar.FontSize = 14;
+cbar.TickLabelInterpreter = 'latex';
+cbar.Position = [.25 .1 .5 .05];
+print('ppi-field.eps','-r0','-depsc2')
 
 %% Plot Clusters 
 figure
-plotGrid(G,'FaceAlpha',0.1,'FaceColor','k','EdgeColor','None'); 
-colormap(jet); axis off; colorbar
+Gn = extractSubgrid(G,in);
+plotGrid(Gn,'FaceColor','none','EdgeColor',[0.5,0.5,0.5])
+axis tight equal off, view(90,90)
 
 % mask
 mask = false(G.cells.num,1);
@@ -333,8 +372,10 @@ mask = false(G.cells.num,1);
 exi = 1; % exi-th PUC value in the list
 
 % exic-th cluster in the PUC list
-for exic = 1:length(fieldnames(PUInfo.(pucx{exi}))) 
+cf = 1.0;
+for exic = [11,13,6]%1:length(fieldnames(PUInfo.(pucx{exi}))) 
     
+    cf = cf -0.06;
     exPUC = fieldnames(PUInfo); 
     exPUC = exPUC{exi};
     exC = fieldnames(PUInfo.(exPUC)); 
@@ -344,13 +385,17 @@ for exic = 1:length(fieldnames(PUInfo.(pucx{exi})))
     exRQIso = RQIso(excvi); % proxy computed at the global index
 
     % background + cluster domain
-    plotCellData(extractSubgrid(G,excvim),exRQIso)
+    %plotCellData(extractSubgrid(G,excvim),exRQIso)
+    plotGrid(extractSubgrid(G,excvim),'FaceColor',[cf,cf-0.2,0.0],'EdgeColor','k')
     
-    title(strcat('Productivity Units - PUC ',num2str(exi)))
+    %title(strcat('Productivity Units - PUC ',num2str(exi)))
     % max clo (cluster)
     indmax = PUMetrics.(exPUC).(exC).maxClosenessVoxelMappedInd;
     mask(indmax) = true;
-    plotGrid(G,mask,'FaceColor','k','EdgeColor','w' );
+    %plotGrid(G,mask,'FaceColor','k','EdgeColor','w' );
 end
 
+%% Plot Histogram of RQISOP
+
+histogram(RQI_SO_norm,'Normalization','pdf')
 
