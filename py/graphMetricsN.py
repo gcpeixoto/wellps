@@ -49,6 +49,6 @@ cln = nx.closeness_centrality(G)
 
 # save to file
 with open(sys.argv[2], 'w') as fw:
-    fw.write('#Node\tBetweeness\tCloseness\tDegree\n')    
+    fw.write('#Node\tDegree\tCloseness\tBetweeness\n')    
     for n in bet.keys():
-        fw.write(f'{n}\t{bet[n]}\t{cln[n]}\t{deg[n]}\n')  
+        fw.write(f'{n}\t{deg[n]}\t{cln[n]}\t{bet[n]}\n')  

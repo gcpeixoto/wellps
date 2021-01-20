@@ -296,7 +296,7 @@ for f = 1:nn % loop PUC
         Mtab2 = tab2.data(:,1:4);            
         nodeID2 = Mtab2(:,1);        
         cln = Mtab2(:,3); % closeness - networkx
-        bet = Mtab2(:,2); % betweeness - networkx        
+        bet = Mtab2(:,4); % betweeness - networkx        
         % delete the temporary files
         delete(outfile2)       
         %}
