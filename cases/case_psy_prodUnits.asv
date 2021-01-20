@@ -271,7 +271,8 @@ for f = 1:nn % loop PUC
         fprintf('%s\n',repmat('=',[1,75]))
         fprintf('%sWELLPS - SNAP Interface :: running C++\n',repmat(' ',[1,20]));
         fprintf('%s\n',repmat('=',[1,75]))
-        system( fullfile(d.getCppDir,exec) );        
+        system( fullfile(d.getCppDir,exec) );
+        
         % get data
         tab = importdata(outfile);                       
         Mtab = tab.data(:,1:4);            
@@ -279,10 +280,7 @@ for f = 1:nn % loop PUC
         % centralities            
         cln  = Mtab(:,3); % closeness      
         bet  = Mtab(:,4); % betweeness
-        % delete the temporary files
-        delete(outfile)       
-                   
-        %{
+                    
         % --- call NETWORKX
         fprintf('%s\n',repmat('=',[1,75]))
         fprintf('%sWELLPS - NETWORKX Interface :: running Python\n',repmat(' ',[1,20]));
@@ -290,17 +288,20 @@ for f = 1:nn % loop PUC
         outfile2 = fullfile(d.getTmpDir,'betNX.txt');        
         exec2 = [d.getPyExec,' ',d.getPyDir,filesep, ...
                 sprintf('graphMetricsN.py %s %s',edfile,outfile2)];
-        system(exec2);        
+        system(exec2);
+        
         % get data
         tab2 = importdata(outfile2);                       
         Mtab2 = tab2.data(:,1:4);            
         nodeID2 = Mtab2(:,1);        
-        cln = Mtab2(:,3); % closeness - networkx
-        bet = Mtab2(:,2); % betweeness - networkx        
+        clnN = Mta
+        betN = Mtab2(:,2); % betweeness - networkx
+                      
+        
+
         % delete the temporary files
-        delete(outfile2)       
-        %}
-                                      
+        delete(outfile), delete(outfile2);                                    
+
         % get rid of input file
         delete(edfile);
 
