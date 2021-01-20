@@ -81,6 +81,15 @@ classdef DirManager
      function d = getCppDir
          d = getenv('CPP_DIR');
      end
+     
+     function d = getPyDir
+         d = getenv('PY_DIR');
+     end
+     
+     % This was set mainly to run beetweness centrality from Networkx
+     function d = getPyExec
+         d = 'python3';
+     end
                
  end
 
