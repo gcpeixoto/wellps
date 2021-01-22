@@ -137,7 +137,7 @@ for n = 1:nnames
             edfile = saveAdjEdges(MadjComp);              
             outfile = fullfile(d.getTmpDir,'metrics.txt');
             exec = [d.getPyExec,' ',d.getPyDir,filesep, ...
-                    sprintf('graphMetricsN.py %s %s',edfile,outfile)];
+                    sprintf('graphMetrics.py %s %s',edfile,outfile)];
             
             % call NETWORKX 
             fprintf('%s\n',repmat('=',[1,75]))
