@@ -118,7 +118,7 @@ switch proxy
     case 'rqip'        
         J = RQIn.*SO_r.*PRESSn_r;                                
             
-    case 'khargoria'                
+    case 'kharghoria'                
         J = PHI_r.*SO_r.*KNn;        
                     
     case 'liu'                
