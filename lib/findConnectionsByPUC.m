@@ -24,7 +24,7 @@ function C = findConnectionsByPUC(dobj, puc, PUC, nofsc, tocsv, dv)
 %
 % RETURNS:
 %
-%       C       - structure containing structures of data related to each DRT.
+%       C       - structure containing structures of data related to each PUC.
 %
 %               - .mat files saved into /mat.
 

@@ -16,6 +16,12 @@ function [J,G,PROPS,active] = computeProdProxy(f,proxy)
 %       G       - processed Eclipse grid (struct)
 %       PROPS   - original Eclipse grid (struct)
 %       active  - active cell indices (1D array)
+%
+%
+%
+% REMARK: 'liu' and 'rqipd' MUST BE TESTED FURTHER, because the distance
+%         function is currently computed with 'log'. This might not be 
+%         OK.
 
 %% Grid reading and processing
 % We are unable to call the function 'lib/buildModel' because we need
@@ -168,7 +174,7 @@ for i = 1:size(gc,1)
             gc(i,2) - gb(:,2), ...
             gc(i,3) - gb(:,3)  ];
     dist = sum(aux.*aux,2).^2;
-    rdist(i) = min(dist);                     
+    rdist(i) = min(dist);                         
 end
 
 % matrix
@@ -181,7 +187,12 @@ RDIST(sub2ind(G.cartDims,ilog,jlog,klog)) = rdist;
 % As we do not have the oil-phase pressure Po, we are going to 
 % use the usual hydrostatic pressure. Also, we assume SOres = 0.                 
 % We firstly normalized the log(KN) and log(RDIST).
-Ln = log(P.KN); Ln = Ln./max(Ln);
-Rn = log(RDIST); Rn = Rn./max(Rn);
+Ln = log(P.KN); 
+Ln(isinf(Ln)) = 0; Ln(isnan(Ln)) = 0;
+Ln = Ln./max(Ln);
+
+Rn = log(RDIST); 
+Rn(isinf(Rn)) = 0; Rn(isnan(Rn)) = 0;
+Rn = Rn./max(Rn);
 
 end
