@@ -1,13 +1,9 @@
 %% EXAMPLE: centrality metrics from NETWORKX
 %
-% This example shows that betweeness is incorrectly computed by SNAP, since 
-% negative values are found. Closeness, on the other hand, seems correct.
-% Degree centrality cannot be directly compared because in NETWORKX it is
-% fractional.
-% 
-% That is why we will use NETWORKX as standard to compute betweeness.
+% This example computes centrality metrics for connected components by
+% using the package Networkx.
 
-mrstVerbose off  % turn on verbose
+mrstVerbose on  % turn on verbose
 
 case_name = 'ex4';
 
@@ -47,7 +43,7 @@ puc = 1:nclasses;
 
 % 6-neighbor connectivity criterion to find clusters from the PUC values
 nofsc = 50; % only for .csv
-pucSt = findConnectionsByPUC(d,1:nclasses,PUC,nofsc,'y',1);
+pucSt = findConnectionsByPUC(d,puc,PUC,nofsc,'y',1);
 
 %% Computing graph metrics 
 % Here, we choose parameters to compute the graph metrics over all
@@ -81,16 +77,16 @@ dataDir = metricsAnalysisPUC(analytics);
 nc = 2; % <--- choose here!!!
 
 mf = fieldnames(Mf); 
-fprintf('PUC values available: %s\n',char(mf{:}))
+fprintf('----> PUC values available: %s\n',char(mf{:}))
 
 mf = mf{1}; % <--- choose here!!!
-fprintf('Choosing: %s\n',mf)
+fprintf('----> Choosing: %s\n',mf)
 
 mf_max = pucSt.(mf).allNComps;
 if nc > mf_max    
-    nc = mf_max;
-    fprintf('Cluster ID set to %d',nc);
+    nc = mf_max;    
 end
+fprintf('----> Cluster ID set to %d.\n',nc);
 
 %% Inverse map to recover current logical indices at the original (unprocessed) grid
 Ind = nan(prod(G.cartDims),1);
