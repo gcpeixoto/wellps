@@ -1,4 +1,4 @@
-function [J,G,PROPS,active] = computeProdProxy(f,proxy)
+function [J,G,PROPS,active] = computeProdProxy(f,proxy,bhp)
 %COMPUTEPRODPROXY Compute productivity potential functions over 
 %                 a given grid.
 %
@@ -19,9 +19,7 @@ function [J,G,PROPS,active] = computeProdProxy(f,proxy)
 %
 %
 %
-% REMARK: 'liu' and 'rqipd' MUST BE TESTED FURTHER, because the distance
-%         function is currently computed with 'log'. This might not be 
-%         OK.
+% REMARK: 'liu' and 'rqipd' MUST BE TESTED FURTHER.
 
 %% Grid reading and processing
 % We are unable to call the function 'lib/buildModel' because we need
@@ -99,15 +97,17 @@ active = find(PROPS.ACTNUM == true);
 
 % -- Required variables
 
-% normalized RQIN (note that this is the norm-based RQI = sqrt(KN/PHI))
-RQIn = P.RQIN./max(P.RQIN);
+% norm-based RQI = sqrt(KN/PHI)
+RQIn = P.RQIN;
 
-% normalized permeability (note that this is the norm-based permeability)
-KNn = P.KN./max(P.KN);
+%  norm-based permeability
+KNn = P.KN;
 
-% normalized pressure: (P - Pmin)/(Pmax - Pmin)
-PRESSn = (PROPS.PRESS0 - min(PROPS.PRESS0))./ ...
-         (max(PROPS.PRESS0) - min(PROPS.PRESS0));
+% pressure differential 
+% (resevoir pressure - bottom hole pressure)
+% Here, we assume that all wells in the field operate at the same fixed
+% BHP.
+PRESSn = PROPS.PRESS0 - bhp;
      
 % reshape is necessary to operate connections over all the grid, 
 % not only over active cells.
@@ -119,7 +119,7 @@ SO_r = reshape(PROPS.SO,G.cartDims);
 switch proxy
     
     case 'rqi'            
-        J = RQIn.*SO_r;      
+        J = RQIn.*SO_r;            
     
     case 'rqip'        
         J = RQIn.*SO_r.*PRESSn_r;                                
@@ -128,12 +128,12 @@ switch proxy
         J = PHI_r.*SO_r.*KNn;        
                     
     case 'liu'                
-        [Ln,Rn] = computeLR(G,P);                
-        J = SO_r.*PRESSn_r.*Ln.*Rn;
+        Rn = computeDistBoundary(G);                
+        J = SO_r.*PRESSn_r.*log(KN).*log(Rn);
         
     case 'rqipd'
-        [~,Rn] = computeLR(G,P);
-        J = RQIn.*SO_r.*PRESSn_r.*Rn;      
+        Rn = computeDistBoundary(G);
+        J = RQIn.*SO_r.*PRESSn_r.*log(Rn);      
         
     otherwise
         error('Productivity proxy function not implemented!')
@@ -144,13 +144,15 @@ end
 J(isnan(J)) = 0;
 J(isinf(J)) = 0;
 
+% normalization
+J = J./max(J);
 
 end
 
 % --- HELPER
 
-function [Ln,Rn] = computeLR(G,P)
-% Compute normalized permeability log and normalized distance to boundary.
+function Rn = computeDistBoundary(G)
+% Compute distance to boundary.
 
 % this gets all unique boundary cells
 % See function 'MRST:boundaryFaceIndices', lines 134-135 
@@ -178,21 +180,10 @@ for i = 1:size(gc,1)
 end
 
 % matrix
-RDIST = nan(G.cartDims);
+Rn = nan(G.cartDims);
 
 % assign values for active cells
 [ilog,jlog,klog] = gridLogicalIndices(G);     
-RDIST(sub2ind(G.cartDims,ilog,jlog,klog)) = rdist;
-
-% As we do not have the oil-phase pressure Po, we are going to 
-% use the usual hydrostatic pressure. Also, we assume SOres = 0.                 
-% We firstly normalized the log(KN) and log(RDIST).
-Ln = log(P.KN); 
-Ln(isinf(Ln)) = 0; Ln(isnan(Ln)) = 0;
-Ln = Ln./max(Ln);
-
-Rn = log(RDIST); 
-Rn(isinf(Rn)) = 0; Rn(isnan(Rn)) = 0;
-Rn = Rn./max(Rn);
+Rn(sub2ind(G.cartDims,ilog,jlog,klog)) = rdist;
 
 end

@@ -36,9 +36,12 @@ f = fullfile(d.getBenchMarksDir,'psy','eclipse','PSY.grdecl');
 %% Productivity Potential Index 
 % Compute PPI through one of the available methods:
 m = {'rqi', 'rqip', 'kharghoria'};
-[J,G,PROPS,active] = computeProdProxy(f,m{2});
 
-%{
+% bottom hole pressure (fixed)
+bhp = 200;
+[J,G,PROPS,active] = computeProdProxy(f,m{2},bhp);
+
+
 Ja = J(active); % J only at active cells
 ip = find(Ja > 0); % positive values
 Jplus = Ja(ip);
@@ -47,7 +50,7 @@ Gn = extractSubgrid(G,ip);
 plotCellData(Gn,Jplus,'FaceAlpha',1.0,'EdgeColor','none')
 axis vis3d off equal
 colormap(jet(35)), colorbar
-%}
+
 
 %% Productivity unit classes
 
