@@ -37,7 +37,7 @@ function [M,L] = computeDRTStarGraphMetrics(opt_metrics, drtSt)
 
 
 % checking
-p = {'nofs','seps','R2min'};
+p = {'nofsc','seps','R2min'};
 if ~all(ismember(p,fieldnames(opt_metrics)))   
     error('wellps:computeDRTGraphMetricsByFZIStar','opt_metrics is not a struct object');
 end
