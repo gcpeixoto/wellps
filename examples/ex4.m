@@ -17,8 +17,9 @@ f = fullfile(d.getBenchMarksDir,'psy','eclipse','PSY.grdecl');
 
 %% Productivity Potential Index 
 % Compute PPI through one of the available methods:
+bhp = 200;
 m = {'rqi', 'rqip', 'kharghoria'};
-[J,G,PROPS,active] = computeProdProxy(f,m{2});
+[J,G,PROPS,active] = computeProdProxy(f,m{2},bhp);
 
 %% Productivity unit classes
 % Computation of the PUCs (productivity unit class).
