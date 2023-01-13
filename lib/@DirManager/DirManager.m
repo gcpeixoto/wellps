@@ -10,7 +10,7 @@ classdef DirManager
      function mountDir
          %MOUNTDIR mount standard directory tree
                   
-         root = './';
+         root = getenv('WELLPS_ROOTDIR'); % assumes it exists from startup.m
                                                     
          % standard dirs
          %      - csv: csv files 
@@ -25,12 +25,14 @@ classdef DirManager
          if ~all(cellfun(@(d) exist(d,'dir'),dirs))             
              need = find(~cellfun(@(d) exist(d,'dir'),dirs));
              for i = 1:numel(need)
-                 mkdir(root,dirs{need(i)});                 
+                 mkdir(dirs{need(i)});                 
              end             
          end
          
      end
-               
+     
+     %{ 
+     %CHECK FOR WHAT PURPOSE?
      function tmpDir = createTempDataDir(mfilename)
         %CREATETEMPDATADIR create a temporary directory to store 
         % data output by the case in execution
@@ -50,6 +52,7 @@ classdef DirManager
         end
         
      end
+     %}
    
      
      %% ---- GET methods 
@@ -59,31 +62,47 @@ classdef DirManager
      end
      
      function d = getCsvDir
-         d = getenv('CSV_DIR');
+         d = getenv('WELLPS_CSV_DIR');
      end
      
      function d = getMatDir
-         d = getenv('MAT_DIR');
+         d = getenv('WELLPS_MAT_DIR');
      end
      
      function d = getLogDir
-         d = getenv('LOG_DIR');
+         d = getenv('WELLPS_LOG_DIR');
      end
      
      function d = getTmpDir
-         d = getenv('TMP_DIR');
+         d = getenv('WELLPS_TMP_DIR');
      end
      
      function d = getBenchMarksDir
-         d = getenv('BENCHMARKS_DIR');
+         d = getenv('WELLPS_BENCHMARKS_DIR');
      end
      
      function d = getCppDir
-         d = getenv('CPP_DIR');
+         d = getenv('WELLPS_CPP_DIR');
      end
      
      function d = getPyDir
-         d = getenv('PY_DIR');
+         d = getenv('WELLPS_PY_DIR');
+     end
+
+     function d = getCasesDir
+         d = getenv('WELLPS_CASES_DIR');
+     end
+
+     function d = getDocsDir
+         d = getenv('WELLPS_DOCS_DIR');
+     end
+
+     function d = getThirdPartyDir
+         d = getenv('WELLPS_THIRDPARTY_DIR');
+     end
+
+     function d = getExamplesDir
+         d = getenv('WELLPS_EXAMPLES_DIR');
      end
      
      % This was set mainly to run beetweness centrality from Networkx
