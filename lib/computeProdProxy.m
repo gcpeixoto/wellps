@@ -175,7 +175,7 @@ for i = 1:size(gc,1)
     aux = [ gc(i,1) - gb(:,1), ...
             gc(i,2) - gb(:,2), ...
             gc(i,3) - gb(:,3)  ];
-    dist = sum(aux.*aux,2).^2;
+    dist = sqrt(sum(aux.*aux,2);
     rdist(i) = min(dist);                         
 end
 
