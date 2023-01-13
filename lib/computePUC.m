@@ -1,12 +1,44 @@
 function [PUC,nclasses,delta,divs] = computePUC(J,active,method)
-%COMPUTEPUC Compute productivity unit classes from the productivity 
-%           potential proxy function J by constructing the 
-%           3D PUC array prepared for finding connections.
+%COMPUTEPUC Compute productivity (or injecttivity) unit classes 
+%           from the productivity (or injectivity) proxy function J 
+%           by constructing the 3D PUC array prepared for finding 
+%           connections.
 %
+% KNOWLEDGE BASE
+%           
+% # Update 2023: 
 %
+%   Regarding J
+%   -----------
+%
+%   We now understand that J can be viewed as a multilinear
+%   functional in space-time written in the form 
+%   J(x,t) = S(x)D(x,t), where 
+%
+%   - S(x) holds the 'static' parameters of the reservoir
+%   - D(x,t) holds the 'dynamic' parameters of the reservoir
+%
+%   The many faces admissible by J will lead to different 
+%   physical interpretations.
+%
+%   See: J.W.L. Silva et al.'s conference paper
+%   'ANALYSIS OF INJECTIVITY FUNCTIONALS BASED ON STATIC AND 
+%   DYNAMIC PARAMETERS FOR CO2 STORAGE PROJECTS',
+%   published on the XXV ENMC - Encontro Nacional de 
+%   Modelagem Computacional, Brazil (Nov 2022).
+%
+%   Regarding 'divs'
+%   ----------------
+%   
+%   The traditional Matlab methods determine the class partition points
+%   by dividing the samples uniformly. We need to apply other class 
+%   partition techniques to have nonuniformly spaced classes. For instance,
+%   applying machine learning algorithms.
+%
+%   
 % PARAMETERS:
 %
-%       J       - productivity potential proxy function (3D double)
+%       J       - proxy function (3D double)
 %       active  - active cell array indices (double)
 %       method  - histogram binning method. (char)
 %                 See available options below.
@@ -15,17 +47,20 @@ function [PUC,nclasses,delta,divs] = computePUC(J,active,method)
 %
 %       PUC     - mask with discrete values (like DRT) (3D array)
 %      nclasses - number of PUC classes (double)
-%       delta   - uniform width of separationg (equivalent to BinWidth) (double)        
-%       divs    - class divisions (equivalent to BinEdges) (1D array)
+%       delta   - uniform width of separation (equivalent to BinWidth) (double)        
+%       divs    - class partition points (equivalent to BinEdges) (1D array)
 
 
 % methods
-sh = 'shimazaki'; % Shimazaki's method
-m = {'auto','scott','fd','sturges','sqrt',sh}; % Matlab methods
+sh = 'shimazaki'; % Shimazaki
+m = {'auto','scott','fd','sturges','sqrt'}; % standard Matlab 
+
+% append
+m{end+1} = sh;
+
 
 % checking
 if ~ismember(method,m)    
-    man = method;
     mand = str2double(method); %convert
     assert( mand > 0,...
     sprintf(['Method ''%s'' must be one of the available binning methods.'...
@@ -43,16 +78,10 @@ Jplus = Ja(Ja > 0);
 Jnet = Jplus(min(Jplus) <= Jplus & Jplus <= max(Jplus));
 
 
-% Shimazaki's method
+% Shimazaki
 if strcmp(method,sh)
     [nclasses, delta, divs, ~, ~] = sshist(Jnet);  
     
-% manually-set method    
-elseif strcmp(method,man)
-    nclasses = mand;
-    delta = (max(Jplus) - min(Jplus))/nclasses;
-    divs = min(Jplus):delta:max(Jplus);
-
 % Matlab methods
 else
     h = histogram(Jnet,'BinMethod',method);              
@@ -73,11 +102,11 @@ PUC = maskPUC(J,nclasses,divs);
 end
 
 
-% Shimazaki's method.
+% Shimazaki's method
 % Extracted from: https://www.neuralengine.org/res/histogram.html#Matlab
 
 function [optN, optD, edges, C, N] = sshist(x,N)
-% [optN, optD, edges, C, N] =sshist(x,N)
+% [optN, optD, edges, C, N] = sshist(x,N)
 %
 % Function `sshist' returns the optimal number of bins in a histogram
 % used for density estimation.
@@ -177,14 +206,15 @@ edges = linspace(x_min,x_max,optN+1);  % Optimal segmentation
 end
 
 
-% Mask 3D J array to PUC values
+
+% --- HELPER FUNCTION 
+
 function PUC = maskPUC(J,nclasses,divs)
+%MASKPUC Mask 3D J array to PUC values according to partition points
 
 j = J(:);
 
-for v = 1:nclasses
-    j(divs(v) <= j & j <= divs(v+1)) = v;
-end
+for v = 1:nclasses; j(divs(v) <= j & j <= divs(v+1)) = v; end
 
 PUC = reshape(j,size(J));
 

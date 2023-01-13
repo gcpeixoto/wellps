@@ -1,9 +1,13 @@
 function C = findConnectionsByPUC(dobj, puc, PUC, nofsc, tocsv, dv)
 %FINDCONNECTIONSBYPUC searches for all the connected components 
-%                            of cells with same PUC value based on 
-%                            proxy function for productivity potential.
+%                     of cells with same PUC value based on 
+%                     proxy function.
+%                     
+%                     PUC = Productivity Unit Class
 %                            
-%                            PUC = Productivity Unit Class
+%                     PUC can also be exhibited as an IUC,
+%                     if injection is concerned. In this case
+%                     'I' will stand for 'Injectivity'.                               
 %
 %
 % PARAMETERS:
