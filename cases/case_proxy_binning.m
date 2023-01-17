@@ -47,7 +47,7 @@ SW= reshape(PROPS.SW,G.cartDims);
 
 %% proxy's choice
 
-proxy = {'J1','J2'};
+proxy = {'J1','J2','J3'};
 
 for a = 1:length(proxy)
 
@@ -79,12 +79,14 @@ for a = 1:length(proxy)
     J = reshape(J,G.cartDims(1),G.cartDims(2),G.cartDims(3));
     
     % normalization
-    J = J./max(J);
+    J = J./max(J(:));
     
     % append to struct
     A.(aux).data = J; 
 
 end
+
+% test
 
 
 %% binning methods
@@ -120,7 +122,7 @@ For example, (p_1,b_2) is the pair (J1,'fd').
 
 %}
 
-nofsc = 10;
+nofsc = 30;
 
 C = struct();
 
