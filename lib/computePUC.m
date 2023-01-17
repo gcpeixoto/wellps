@@ -212,10 +212,15 @@ end
 function PUC = maskPUC(J,nclasses,divs)
 %MASKPUC Mask 3D J array to PUC values according to partition points
 
-j = J(:);
+jin = J(:);
+jout = 0*jin; % assumes classes are 0.
 
-for v = 1:nclasses; j(divs(v) <= j & j <= divs(v+1)) = v; end
+% uses input J to collect classes and mark the positions in
+% output J
+for v = 1:nclasses
+    jout(divs(v) < jin & jin <= divs(v+1)) = v;    
+end
 
-PUC = reshape(j,size(J));
+PUC = reshape(jout,size(J));
 
 end

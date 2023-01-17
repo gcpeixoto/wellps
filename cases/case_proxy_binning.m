@@ -47,7 +47,7 @@ SW= reshape(PROPS.SW,G.cartDims);
 
 %% proxy's choice
 
-proxy = {'J1','J2','J3'};
+proxy = {'J1','J2'};
 
 for a = 1:length(proxy)
 
