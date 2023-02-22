@@ -18,7 +18,7 @@ endif
 
 # flags
 CXXFLAGS = -g -std=c++98 -Wall
-LFLAGS = 
+LFLAGS = -fopenmp # test if SNAP requires parallel
 
 # directories
 BASE_DIR = .
