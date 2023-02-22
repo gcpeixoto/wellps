@@ -6,7 +6,7 @@ function Mf = computePUCGraphMetricsNetworkx(opt_metrics, pucSt)
 %       -   opt_metrics: structure that should contain the following 
 %                        parameters:
 %                           
-%                        - 'nofsc' (string): number of significant cells. 
+%                        - 'nofsc' (numerical): number of significant cells. 
 %                          This is the minimum value of cells to be 
 %                          considered for a cluster (i.e., a minimum 
 %                          volume threshold)                       
