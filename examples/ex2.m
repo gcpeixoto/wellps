@@ -20,7 +20,7 @@ G = computeGeometry(G);
 
 %% Load sample cluster files 
 
-sdir = fullfile(d.getRootDir,'examples','sample');
+sdir = fullfile(d.getRootDir,'examples','ex2-sample');
 
 % Here, we load the sample .mat files 
 load(fullfile(sdir,'C.mat'),'drtSt');
