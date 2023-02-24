@@ -40,14 +40,14 @@ RQIN_n = ( RQIN - min(RQIN(:)) ) ./ ( max(RQIN(:)) - min(RQIN(:)) );
 %% Load Data
 
 % distances
-load(fullfile(d.getExamplesDir,strcat(case_name,'sample'),'Rn.mat'),'Rn');
-load(fullfile(d.getExamplesDir,strcat(case_name,'sample'),'Tn.mat'),'Tn');
+load(fullfile(d.getExamplesDir,strcat(case_name,'-sample'),'Rn.mat'),'Rn');
+load(fullfile(d.getExamplesDir,strcat(case_name,'-sample'),'Tn.mat'),'Tn');
 
 Rn(isnan(Rn)) = 0;
 Tn(isnan(Tn)) = 0;
 
 % pressure
-load(fullfile(d.getExamplesDir,strcat(case_name,'sample'),'PRESS.mat'),'PRESS');
+load(fullfile(d.getExamplesDir,strcat(case_name,'-sample'),'PRESS.mat'),'PRESS');
 
 %% Proxy's choice
 
@@ -107,7 +107,7 @@ end
 
 
 % load active
-load(fullfile(d.getExamplesDir,strcat(case_name,'sample'),'active.mat'),'active');
+load(fullfile(d.getExamplesDir,strcat(case_name,'-sample'),'active.mat'),'active');
 
 
 binning = {'scott','sturges'}; %without integers method
