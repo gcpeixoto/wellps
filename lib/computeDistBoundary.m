@@ -1,5 +1,5 @@
 function [dbmin, dbmax] = computeDistBoundary(G,varargin)
-%% COMPUTEDISTBOUNDARYC Compute distances of cells to the MRST 
+%% COMPUTEDISTBOUNDARY Compute distances of cells to the MRST 
 %                       grid boundary.
 %
 %   This method compute the min/max Euclidean distance d(c,b) of all grid cells
@@ -35,10 +35,10 @@ gc = G.cells.centroids;
 gb = G.cells.centroids(bndycells,:);
 
 
-% initialization
-
+% case for all cells
 if isempty(varargin)
 
+    % initialization
     dbmin= gc(:,1); 
     dbmax= gc(:,1); 
     
@@ -51,6 +51,7 @@ if isempty(varargin)
         dbmax(i) = max(dist);                         
     end
 
+% case for single cells
 elseif length(varargin) == 1
 
     c0 = varargin{1}; % reference cell index
@@ -61,7 +62,7 @@ elseif length(varargin) == 1
             gc0(3) - gb(:,3)  ];
     dist = sqrt(sum(aux.*aux,2));
     
-    
+
     dbmin = min(dist);                         
     dbmax = max(dist);                         
 
