@@ -69,12 +69,15 @@ elseif length(varargin) == 1
 end
 
 % matrix
-dbmin = nan(G.cartDims);
-dbmax = nan(G.cartDims);
+R1 = nan(G.cartDims);
+R2 = nan(G.cartDims);
 
 % assign values for active cells
 [ilog,jlog,klog] = gridLogicalIndices(G);     
-dbmin(sub2ind(G.cartDims,ilog,jlog,klog)) = dbmin;
-dbmax(sub2ind(G.cartDims,ilog,jlog,klog)) = dbmax;
+R1(sub2ind(G.cartDims,ilog,jlog,klog)) = dbmin;
+R2(sub2ind(G.cartDims,ilog,jlog,klog)) = dbmax;
+
+dbmin = R1;
+dbmax = R2;
 
 end
